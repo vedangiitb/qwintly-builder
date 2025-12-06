@@ -1,0 +1,17 @@
+{
+  "name": "builder",
+  "version": "1.0.0",
+  "main": "dist/builder.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/builder.js"
+  },
+  "dependencies": {
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "@types/node": "^20.0.0",
+    "@types/ws": "^8.5.10"
+  }
+}
