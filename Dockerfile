@@ -7,6 +7,8 @@ RUN npm install
 
 COPY . .
 
+COPY templates /templates
+
 RUN npm run build
 
 # Create build workspace
