@@ -1,19 +1,15 @@
-FROM node:20
+FROM node:20-slim
 
+# Create workspace directory
+RUN mkdir -p /workspace
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json .
 RUN npm install
 
 COPY . .
 
-COPY templates /templates
+ENV WORKER_WS=""
+ENV SESSION_ID=""
 
-RUN npm run build
-
-# Create build workspace
-RUN mkdir -p /workspace
-
-EXPOSE 7777
-
-CMD ["npm", "start"]
+CMD ["node", "index.js"]

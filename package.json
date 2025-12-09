@@ -1,17 +1,30 @@
 {
-  "name": "builder",
+  "name": "qwintly-builder",
   "version": "1.0.0",
-  "main": "dist/builder.js",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/builder.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vedangiitb/qwintly-builder.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/vedangiitb/qwintly-builder/issues"
+  },
+  "homepage": "https://github.com/vedangiitb/qwintly-builder#readme",
+  "devDependencies": {
+    "@types/node": "^24.10.2",
+    "@types/ws": "^8.18.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
-    "ws": "^8.14.2"
-  },
-  "devDependencies": {
-    "typescript": "^5.3.0",
-    "@types/node": "^20.0.0",
-    "@types/ws": "^8.5.10"
+    "ws": "^8.18.3"
   }
 }
