@@ -7,9 +7,8 @@ WORKDIR /app
 COPY package.json .
 RUN npm install
 
+# Build the application
 COPY . .
+RUN npm run build
 
-ENV WORKER_WS=""
-ENV SESSION_ID=""
-
-CMD ["node", "index.js"]
+CMD ["node", "dist/index.js"]

@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -20,11 +22,15 @@
   "homepage": "https://github.com/vedangiitb/qwintly-builder#readme",
   "devDependencies": {
     "@types/node": "^24.10.2",
+    "@types/unzipper": "^0.10.11",
     "@types/ws": "^8.18.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@google-cloud/storage": "^7.18.0",
+    "@google/genai": "^1.33.0",
+    "unzipper": "^0.12.3",
     "ws": "^8.18.3"
   }
 }

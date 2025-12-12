@@ -1,0 +1,63 @@
+# .dockerignore
+# Exclude files and directories from Docker build context to speed up builds
+
+# Node modules and package lock files
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local environment files and secrets
+.env
+.env.*.local
+.env.local
+.env.*
+secrets*
+*.pem
+*.key
+
+# Git and version control
+.git
+.gitignore
+
+# IDE / Editor folders
+.vscode
+.idea
+*.sublime-project
+*.sublime-workspace
+
+# Build outputs
+dist
+build
+coverage
+
+# Logs and temporary files
+*.log
+*.tmp
+tmp/
+temp/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Docker-related stuff (exclude the .dockerignore itself)
+.dockerignore
+
+# Optional: If your Dockerfile builds from JS and copies only the compiled files, you
+# might prefer to exclude TypeScript sources. Keep them if you need to compile inside Docker.
+# src/**/*.ts
+# **/*.ts
+
+# Optional: Node packaging artifacts
+*.tgz
+
+# Optional: tests or examples that are not needed in the final image
+tests/
+__tests__/
+
+# Keep the Dockerfile if you use it as the build instruction; exclude it only if you don't need it in the context
+# Dockerfile
+
+# End of .dockerignore
