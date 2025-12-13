@@ -9,7 +9,7 @@ const BUCKET_NAME = "qwintly-builder-templates";
 const TEMPLATE_ZIP = "template-v1.zip";
 
 export async function cloneProjectTemplate(sessionId: string) {
-  const workspacePath = `/workspace/${sessionId}`;
+  const workspacePath = `/tmp/workspace/${sessionId}`;
   sendLog(`Fetching template from GCS into ${workspacePath}`);
 
   // Ensure workspace exists

@@ -14,7 +14,7 @@ export const BUCKET_NAME = "qwintly-builder-requests";
 
 async function main() {
   sendLog("Builder connected to worker for the session id: " + SESSION_ID);
-  const workspace = `/workspace/${SESSION_ID}`;
+  const workspace = `/tmp/workspace/${SESSION_ID}`;
   try {
     await fs.mkdir(workspace, { recursive: true });
     sendLog("Workspace created: " + workspace);
@@ -36,7 +36,7 @@ async function main() {
 
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
-      contents: "How does AI work?",
+      contents: "This is a test prompt to see if my api is up. Please say hello along with a random word.",
     });
     console.log(response.text);
 
