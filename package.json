@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/vedangiitb/qwintly-builder#readme",
   "devDependencies": {
+    "@types/archiver": "^7.0.0",
     "@types/node": "^24.10.2",
     "@types/unzipper": "^0.10.11",
     "@types/ws": "^8.18.1",
@@ -30,6 +31,7 @@
   "dependencies": {
     "@google-cloud/storage": "^7.18.0",
     "@google/genai": "^1.33.0",
+    "archiver": "^7.0.1",
     "unzipper": "^0.12.3",
     "ws": "^8.18.3"
   }

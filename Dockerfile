@@ -1,14 +1,14 @@
 FROM node:20-slim
 
-# Create workspace directory
-RUN mkdir -p /workspace
 WORKDIR /app
 
-COPY package.json .
-RUN npm install
+COPY package*.json ./
+RUN npm ci
 
-# Build the application
 COPY . .
+
 RUN npm run build
+
+ENV NODE_ENV=production
 
 CMD ["node", "dist/index.js"]

@@ -1,16 +1,26 @@
 import { GoogleGenAI } from "@google/genai";
 import fs from "fs/promises";
-import { cloneProjectTemplate } from "./cloneProjectTemplate.js";
 import { projectConstants } from "./data/constants.js";
-import { fetchProjectContents } from "./fetchProjectContents.js";
-import { getRequest } from "./getRequest.js";
-import { sendLog } from "./sendLog.js";
+import { cloneProjectTemplate } from "./utils/cloneProjectTemplate.js";
+import { fetchProjectContents } from "./utils/fetchProjectContents.js";
+import { getRequest } from "./utils/getRequest.js";
+import { sendLog } from "./utils/sendLog.js";
+import { uploadProjectToGCS } from "./utils/uploadProjectToGCS.js";
+import { zipFolder } from "./utils/zipFolder.js";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GENAI_API_KEY! });
 
 export const SESSION_ID = process.env.SESSION_ID!;
 export const REQUEST_TYPE = process.env.REQUEST_TYPE!;
-export const BUCKET_NAME = "qwintly-builder-requests";
+export const BUCKET_NAME =
+  process.env.BUCKET_NAME || "qwintly-builder-requests";
+export const SNAPSHOT_BUCKET_NAME =
+  process.env.SNAPSHOT_BUCKET_NAME || "qwintly-project-snapshots";
+
+if (!SESSION_ID || !REQUEST_TYPE) {
+  console.error("Missing required env vars");
+  process.exit(1);
+}
 
 async function main() {
   sendLog("Builder connected to worker for the session id: " + SESSION_ID);
@@ -36,9 +46,17 @@ async function main() {
 
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
-      contents: "This is a test prompt to see if my api is up. Please say hello along with a random word.",
+      contents:
+        "This is a test prompt to see if my api is up. Please say hello along with a random word.",
     });
     console.log(response.text);
+
+    const zipPath = `/tmp/${SESSION_ID}.zip`;
+
+    sendLog("Zipping project workspace");
+    await zipFolder(workspace, zipPath);
+
+    await uploadProjectToGCS(zipPath, SNAPSHOT_BUCKET_NAME, SESSION_ID);
 
     sendLog("Builder task complete. Exiting");
     process.exit(0);
