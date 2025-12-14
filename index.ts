@@ -1,4 +1,3 @@
-import { GoogleGenAI } from "@google/genai";
 import fs from "fs/promises";
 import { projectConstants } from "./data/constants.js";
 import { cloneProjectTemplate } from "./utils/cloneProjectTemplate.js";
@@ -7,8 +6,7 @@ import { getRequest } from "./utils/getRequest.js";
 import { sendLog } from "./utils/sendLog.js";
 import { uploadProjectToGCS } from "./utils/uploadProjectToGCS.js";
 import { zipFolder } from "./utils/zipFolder.js";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GENAI_API_KEY! });
+import { initProjectStructure } from "./utils/ai/initProjectStructure.js";
 
 export const SESSION_ID = process.env.SESSION_ID!;
 export const REQUEST_TYPE = process.env.REQUEST_TYPE!;
@@ -44,14 +42,17 @@ async function main() {
       process.exit(1);
     }
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents:
-        "This is a test prompt to see if my api is up. Please say hello along with a random word.",
-    });
-    console.log(response.text);
-
     const zipPath = `/tmp/${SESSION_ID}.zip`;
+
+    const sampleRequest =
+      "Create a modern SaaS landing page for an AI resume matcher product";
+
+    await initProjectStructure(REQUEST_TYPE, sampleRequest, workspace);
+
+    sendLog(
+      "Workspace root contents: " +
+        JSON.stringify(await fs.readdir(workspace))
+    );
 
     sendLog("Zipping project workspace");
     await zipFolder(workspace, zipPath);
