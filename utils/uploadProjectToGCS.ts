@@ -1,5 +1,4 @@
 import { Storage } from "@google-cloud/storage";
-import { sendLog } from "./sendLog.js";
 
 const storage = new Storage();
 
@@ -10,7 +9,7 @@ export async function uploadProjectToGCS(
 ) {
   const destination = `projects/${sessionId}.zip`;
 
-  sendLog(`Uploading project to gs://${bucketName}/${destination}`);
+  console.log(`Uploading project to gs://${bucketName}/${destination}`);
 
   await storage.bucket(bucketName).upload(zipPath, {
     destination,
@@ -20,5 +19,5 @@ export async function uploadProjectToGCS(
     },
   });
 
-  sendLog("Upload complete");
+  console.log("Upload complete");
 }

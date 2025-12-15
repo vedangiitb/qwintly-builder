@@ -1,12 +1,13 @@
 import fs from "fs/promises";
 import { projectConstants } from "./data/constants.js";
+import { initProjectStructure } from "./utils/ai/initProjectStructure.js";
 import { cloneProjectTemplate } from "./utils/cloneProjectTemplate.js";
 import { fetchProjectContents } from "./utils/fetchProjectContents.js";
 import { getRequest } from "./utils/getRequest.js";
+import { registerCleanup, safeExit } from "./utils/gracefulShutdown.js";
 import { sendLog } from "./utils/sendLog.js";
 import { uploadProjectToGCS } from "./utils/uploadProjectToGCS.js";
 import { zipFolder } from "./utils/zipFolder.js";
-import { initProjectStructure } from "./utils/ai/initProjectStructure.js";
 
 export const SESSION_ID = process.env.SESSION_ID!;
 export const REQUEST_TYPE = process.env.REQUEST_TYPE!;
@@ -16,56 +17,80 @@ export const SNAPSHOT_BUCKET_NAME =
   process.env.SNAPSHOT_BUCKET_NAME || "qwintly-project-snapshots";
 
 if (!SESSION_ID || !REQUEST_TYPE) {
-  console.error("Missing required env vars");
-  process.exit(1);
+  throw new Error("Missing required env vars");
 }
 
 async function main() {
-  sendLog("Builder connected to worker for the session id: " + SESSION_ID);
+  console.log("Builder connected to worker for the session id: " + SESSION_ID);
   const workspace = `/tmp/workspace/${SESSION_ID}`;
+  const zipPath = `/tmp/${SESSION_ID}.zip`;
   try {
     await fs.mkdir(workspace, { recursive: true });
-    sendLog("Workspace created: " + workspace);
+    console.log("Workspace created: " + workspace);
 
-    sendLog("Loading request for session id: " + SESSION_ID);
+    registerCleanup(async () => {
+      try {
+        await fs.rm(workspace, { recursive: true, force: true });
+        console.log("Workspace removed: " + workspace);
+      } catch (e) {
+        console.warn("Failed to remove workspace: " + e);
+      }
+    });
+
+    console.log("Loading request for session id: " + SESSION_ID);
     const request = await getRequest(SESSION_ID);
-    sendLog("Request loaded: " + JSON.stringify(request));
+    console.log("Request loaded: " + JSON.stringify(request));
 
+    sendLog("Setting up your project");
     if (REQUEST_TYPE == projectConstants.projectRequestTypes.new) {
-      sendLog("New project request. Cloning project template");
+      console.log("New project request. Cloning project template");
       await cloneProjectTemplate(SESSION_ID);
+      sendLog("Creating project structure...");
+
+      const sampleRequest =
+        "Create a modern SaaS landing page for an AI resume matcher product";
+
+      await initProjectStructure(REQUEST_TYPE, sampleRequest, workspace);
+
+      console.log(
+        "Workspace root contents: " +
+          JSON.stringify(await fs.readdir(workspace))
+      );
     } else if (REQUEST_TYPE == projectConstants.projectRequestTypes.update) {
-      sendLog("Update project request. Fetching project contents");
+      console.log("Update project request. Fetching project contents");
       await fetchProjectContents(SESSION_ID);
     } else {
-      sendLog("Unknown request type: " + REQUEST_TYPE);
-      process.exit(1);
+      console.log("Unknown request type: " + REQUEST_TYPE);
+      await safeExit(1, "Unknown request type: " + REQUEST_TYPE);
     }
 
-    const zipPath = `/tmp/${SESSION_ID}.zip`;
+    registerCleanup(async () => {
+      try {
+        await fs.rm(zipPath, { force: true });
+      } catch (e) {
+        console.error(e || "Error occured while cleaning up zip file");
+      }
+    });
 
-    const sampleRequest =
-      "Create a modern SaaS landing page for an AI resume matcher product";
-
-    await initProjectStructure(REQUEST_TYPE, sampleRequest, workspace);
-
-    sendLog(
-      "Workspace root contents: " +
-        JSON.stringify(await fs.readdir(workspace))
-    );
-
-    sendLog("Zipping project workspace");
+    sendLog("Saving Changes...");
+    console.log("Zipping workspace");
     await zipFolder(workspace, zipPath);
 
     await uploadProjectToGCS(zipPath, SNAPSHOT_BUCKET_NAME, SESSION_ID);
 
-    sendLog("Builder task complete. Exiting");
-    process.exit(0);
+    console.log("Builder task complete. Exiting");
+    sendLog("SUCCESS");
+    await safeExit(0, "Completed successfully");
   } catch (err: any) {
-    sendLog(
+    console.error(
       "Builder error: " + (err && err.message ? err.message : String(err))
     );
-    process.exit(1);
+    // TODO: Improve this log
+    sendLog("Error Occured, please try again");
+    await safeExit(
+      1,
+      err && err.message ? err.message : String(err ?? "Unknown error")
+    );
   }
 }
 
