@@ -45,7 +45,7 @@ async function main() {
     if (REQUEST_TYPE == projectConstants.projectRequestTypes.new) {
       console.log("New project request. Cloning project template");
       await cloneProjectTemplate(SESSION_ID);
-      sendLog("Creating project structure...");
+      sendLog("Creating project structure");
 
       const sampleRequest =
         "Create a modern SaaS landing page for an AI resume matcher product";
@@ -72,7 +72,7 @@ async function main() {
       }
     });
 
-    sendLog("Saving Changes...");
+    sendLog("Saving Changes");
     console.log("Zipping workspace");
     await zipFolder(workspace, zipPath);
 

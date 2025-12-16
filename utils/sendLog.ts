@@ -1,5 +1,11 @@
 import { SESSION_ID } from "../index.js";
 
 export function sendLog(msg: string) {
-  console.log(`[${SESSION_ID}]: ${msg}`);
+  console.log(
+    JSON.stringify({
+      sessionId: SESSION_ID,
+      type: "STATUS",
+      message: msg,
+    })
+  );
 }
