@@ -11,13 +11,13 @@ export async function createProjectStructure({
   files: { path: string; purpose: string }[];
 }) {
   for (const folder of folders) {
-    createFolder(path.join(root, folder));
+    await createFolder(path.join(root, folder));
   }
 
   for (const file of files) {
     const fullPath = path.join(root, file.path);
-    createFolder(path.dirname(fullPath));
-    createFile(fullPath, `// ${file.purpose}\n`);
+    await createFolder(path.dirname(fullPath));
+    await createFile(fullPath, `// ${file.purpose}\n`);
   }
 
   return { ok: true };

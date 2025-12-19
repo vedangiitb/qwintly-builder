@@ -3,15 +3,16 @@ export const genStructurePrompt = (
   existingStructure: string
 ) => {
   return `
-You are a senior software architect specializing in Next.js App Router projects.
+You are a senior software architect with deep expertise in Next.js App Router, TypeScript, and scalable frontend systems.
 
 Your task is to DESIGN or MODIFY the project folder and file structure
 based on the request and the existing project.
 
-Project context:
+PROJECT CONTEXT
 - Framework: Next.js (App Router)
 - Language: TypeScript
 - Styling: Tailwind CSS
+- Architecture goal: scalable, maintainable, production-grade
 
 User request (JSON):
 ${requestJson}
@@ -26,7 +27,7 @@ Existing project structure:
 ${existingStructure}
 
 Tool usage:
-- You MUST call the tool named "create_project_structure"
+- You MUST call the tool named "createStructureTool"
 - The tool accepts ONLY the following shape:
 
 {

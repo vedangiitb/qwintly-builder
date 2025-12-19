@@ -2,6 +2,7 @@ import { aiResponse } from "../../infra/ai/gemini.client.js";
 import { JobContext } from "../../job/jobContext.js";
 import { genStructurePrompt } from "../../prompts/genStructure.js";
 import { createProjectStructure } from "../../tools/implementations/createProjectStructure.js";
+import { createStructureTool } from "../../tools/schemas/createFolderStructure.schema.js";
 import { modifyFolderStructureTools } from "../../tools/toolsets/initProject.tools.js";
 import { readStructure } from "../../utils/readStructure.js";
 
@@ -29,7 +30,7 @@ export async function genStructure(ctx: JobContext, request: JSON) {
       console.log(`Arguments: ${JSON.stringify(functionCall.args)}`);
 
       if (
-        name === "create_project_structure" &&
+        name === createStructureTool.name &&
         args &&
         Array.isArray(args.folders) &&
         Array.isArray(args.files)

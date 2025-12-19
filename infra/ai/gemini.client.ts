@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { FunctionCallingConfigMode, GoogleGenAI } from "@google/genai";
 import { GOOGLE_GENAI_API_KEY } from "../../config/env.js";
 
 export const ai = new GoogleGenAI({
@@ -7,10 +7,15 @@ export const ai = new GoogleGenAI({
 
 export const aiResponse = async (request: string, tools: any[]) => {
   return await ai.models.generateContent({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash-lite",
     contents: request,
     config: {
       tools: tools,
+      toolConfig: {
+        functionCallingConfig: {
+          mode: FunctionCallingConfigMode.ANY,
+        },
+      },
     },
   });
 };

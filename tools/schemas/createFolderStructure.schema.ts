@@ -1,7 +1,7 @@
 import { Type } from "@google/genai";
 
 export const createStructureTool = {
-  name: "create_project_structure",
+  name: "createStructureTool",
   description:
     "Create or modify project folder structure and define files with their purpose (no code)",
   parameters: {
