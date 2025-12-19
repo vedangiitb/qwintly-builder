@@ -4,7 +4,7 @@ const cleanups: CleanupFn[] = [];
 let shuttingDown = false;
 let shutdownPromise: Promise<void> | null = null;
 
-export function registerCleanup(fn: CleanupFn) {
+export function registerCleanupUtil(fn: CleanupFn) {
   cleanups.push(fn);
   return () => {
     const idx = cleanups.indexOf(fn);
