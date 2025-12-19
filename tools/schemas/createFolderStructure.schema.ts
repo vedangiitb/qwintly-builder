@@ -3,7 +3,7 @@ import { Type } from "@google/genai";
 export const createStructureTool = {
   name: "create_project_structure",
   description:
-    "Create project folder structure and add files with boilerplate code",
+    "Create or modify project folder structure and define files with their purpose (no code)",
   parameters: {
     type: Type.OBJECT,
     properties: {

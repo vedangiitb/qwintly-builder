@@ -26,5 +26,5 @@ export async function stat(path: string) {
 }
 
 export async function readDir(path: string) {
-  return await fs.readdir(path);
+  return await fs.readdir(path, { withFileTypes: true });
 }

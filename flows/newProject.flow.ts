@@ -1,6 +1,6 @@
 import { JobContext } from "../job/jobContext.js";
 import { step } from "../job/step.js";
-import { genStructure } from "../services/ai/buildStructure.service.js";
+import { genStructure } from "../services/ai/genStructure.service.js";
 import { cloneTemplate } from "../services/project/cloneTemplate.service.js";
 import { getRequest } from "../services/project/getRequest.service.js";
 import { zipProject } from "../services/project/zipProject.service.js";

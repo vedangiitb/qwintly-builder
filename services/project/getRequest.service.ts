@@ -11,7 +11,7 @@ export async function getRequest(ctx: JobContext): Promise<any> {
   const filePath = `requests/${sessionId}.json`;
 
   try {
-    downloadContentsGCS(filePath, bucket);
+    return await downloadContentsGCS(filePath, bucket);
   } catch (err: any) {
     throw new Error(`Failed to load request for sessionId: ${sessionId}`);
   }
