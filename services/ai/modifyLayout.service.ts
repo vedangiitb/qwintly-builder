@@ -6,7 +6,7 @@ import { createStructureTool } from "../../tools/schemas/createFolderStructure.s
 import { modifyFolderStructureTools } from "../../tools/toolsets/initProject.tools.js";
 import { readStructure } from "../../utils/readStructure.js";
 
-export async function genStructure(ctx: JobContext, request: JSON) {
+export async function modifyLayout(ctx: JobContext, request: JSON) {
   const workspace = ctx.workspace;
   const requestJson = JSON.stringify(request);
 
@@ -30,7 +30,8 @@ export async function genStructure(ctx: JobContext, request: JSON) {
       console.log(`Arguments: ${JSON.stringify(functionCall.args)}`);
 
       if (
-        name === createStructureTool.name &&
+        // name === createStructureTool.name &&
+        name === "helloyo" &&
         args &&
         Array.isArray(args.folders) &&
         Array.isArray(args.files)

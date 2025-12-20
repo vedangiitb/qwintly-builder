@@ -1,6 +1,7 @@
 import { JobContext } from "../job/jobContext.js";
 import { step } from "../job/step.js";
-import { genStructure } from "../services/ai/genStructure.service.js";
+import { modifyLayout } from "../services/ai/modifyLayout.service.js";
+import { planTasks } from "../services/ai/planTasks.service.js";
 import { cloneTemplate } from "../services/project/cloneTemplate.service.js";
 import { getRequest } from "../services/project/getRequest.service.js";
 import { zipProject } from "../services/project/zipProject.service.js";
@@ -16,7 +17,11 @@ export async function runNewProjectFlow(ctx: JobContext) {
     retries: 2,
   });
 
-  await step(ctx, "Modifying Folder Structure", () => genStructure(ctx, request), {
+  const tasks = await step(ctx, "Planning Tasks", () => planTasks(ctx, request), {
+    retries: 1,
+  });
+
+  await step(ctx, "Modifying Folder Structure", () => modifyLayout(ctx, request), {
     retries: 1,
   });
 

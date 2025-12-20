@@ -1,6 +1,6 @@
 import { JobContext } from "../job/jobContext.js";
 import { step } from "../job/step.js";
-import { genStructure } from "../services/ai/genStructure.service.js";
+import { modifyLayout } from "../services/ai/modifyLayout.service.js";
 import { cloneProjectSnapShot } from "../services/project/fetchProject.service.js";
 import { getRequest } from "../services/project/getRequest.service.js";
 import { zipProject } from "../services/project/zipProject.service.js";
@@ -15,7 +15,7 @@ export async function runUpdateProjectFlow(ctx: JobContext) {
     retries: 2,
   });
 
-  await step(ctx, "Modifying Folder Structure", () => genStructure(ctx, request), {
+  await step(ctx, "Modifying Folder Structure", () => modifyLayout(ctx, request), {
     retries: 1,
   });
 
