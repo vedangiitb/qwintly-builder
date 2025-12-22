@@ -6,7 +6,6 @@ import { cloneTemplate } from "../services/project/cloneTemplate.service.js";
 import { getRequest } from "../services/project/getRequest.service.js";
 import { zipProject } from "../services/project/zipProject.service.js";
 import { uploadProjectSnapshot } from "../services/snapshot/uploadSnapshot.service.js";
-import { sendLog } from "../utils/logger.js";
 
 export async function runNewProjectFlow(ctx: JobContext) {
   await step(ctx, "Cloning Snapshot", () => cloneTemplate(ctx), {
@@ -33,5 +32,4 @@ export async function runNewProjectFlow(ctx: JobContext) {
     retries: 3,
   });
 
-  sendLog("SUCCESS");
 }
