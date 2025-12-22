@@ -1,5 +1,6 @@
 // Session/workspace/env context
 import {
+  GEN_PROJECT_ID,
   REQUEST_BUCKET_NAME,
   REQUEST_TYPE,
   SESSION_ID,
@@ -19,6 +20,7 @@ export function createJobContext() {
     requestsBucket: REQUEST_BUCKET_NAME || "qwintly-builder-requests",
     snapshotBucket: SNAPSHOT_BUCKET_NAME || "qwintly-project-snapshots",
     templateBucket: "qwintly-builder-templates",
+    genProjectId: GEN_PROJECT_ID,
   };
 }
 
