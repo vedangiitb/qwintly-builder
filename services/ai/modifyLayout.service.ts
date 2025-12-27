@@ -18,7 +18,7 @@ export async function modifyLayout(ctx: JobContext, request: JSON) {
   try {
     const planResponse = await aiResponse(
       genStructurePrompt(requestJson, existingStructure),
-      modifyFolderStructureTools
+      {tools:modifyFolderStructureTools}
     );
 
     console.log(planResponse.text);

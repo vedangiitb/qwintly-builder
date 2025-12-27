@@ -9,9 +9,10 @@ export async function getRequest(ctx: JobContext): Promise<any> {
   }
 
   const filePath = `requests/${sessionId}.json`;
+  const filePathTemp = `requests/pm_msg.json`;
 
   try {
-    return await downloadContentsGCS(filePath, bucket);
+    return await downloadContentsGCS(filePathTemp, bucket);
   } catch (err: any) {
     throw new Error(`Failed to load request for sessionId: ${sessionId}`);
   }

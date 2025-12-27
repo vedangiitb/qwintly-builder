@@ -32,7 +32,10 @@
     "@google-cloud/storage": "^7.18.0",
     "@google/genai": "^1.33.0",
     "archiver": "^7.0.1",
+    "dotenv": "^17.2.3",
     "unzipper": "^0.12.3",
-    "ws": "^8.18.3"
+    "ws": "^8.18.3",
+    "zod": "^4.2.1",
+    "zod-to-json-schema": "^3.25.1"
   }
 }

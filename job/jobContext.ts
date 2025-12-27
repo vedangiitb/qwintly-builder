@@ -5,6 +5,7 @@ import {
   REQUEST_TYPE,
   SESSION_ID,
   SNAPSHOT_BUCKET_NAME,
+  INDEX_BUCKET
 } from "../config/env.js";
 
 export function createJobContext() {
@@ -21,6 +22,7 @@ export function createJobContext() {
     snapshotBucket: SNAPSHOT_BUCKET_NAME || "qwintly-project-snapshots",
     templateBucket: "qwintly-builder-templates",
     genProjectId: GEN_PROJECT_ID,
+    codeIndexBucket: INDEX_BUCKET || "qwintly-code-indexes",
   };
 }
 
