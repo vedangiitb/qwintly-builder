@@ -28,3 +28,7 @@ export async function stat(path: string) {
 export async function readDir(path: string) {
   return await fs.readdir(path, { withFileTypes: true });
 }
+
+export async function readFile(path: string) {
+  return await fs.readFile(path, "utf-8");
+}

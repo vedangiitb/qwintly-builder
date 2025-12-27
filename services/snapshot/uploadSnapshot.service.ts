@@ -10,7 +10,7 @@ export async function uploadProjectSnapshot(ctx: JobContext) {
   console.log(`Uploading project to gs://${bucketName}/${destination}`);
 
   try {
-    uploadFileToGCS(projectId, zipPath, bucketName, destination);
+    await uploadFileToGCS(projectId, zipPath, bucketName, destination);
   } catch (e) {
     throw new Error(`Failed to upload project to GCS: ${e}`);
   }

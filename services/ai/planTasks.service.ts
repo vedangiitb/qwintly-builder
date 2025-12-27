@@ -66,7 +66,9 @@ export async function planTasks(
       taskList.tasks.push(createdTask);
     }
 
-    return taskList.tasks;
+    const tasksList = taskList.tasks;
+    if (!taskList) throw new Error("No tasks created.");
+    return tasksList;
   } catch (err) {
     console.error(err);
   }
