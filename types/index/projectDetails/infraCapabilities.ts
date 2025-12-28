@@ -1,4 +1,4 @@
-export interface infra {
+export interface InfraCapabilities {
   [key: string]: infraItem;
 }
 

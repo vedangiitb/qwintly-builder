@@ -16,3 +16,22 @@ export async function uploadFileToGCS(
     },
   });
 }
+
+export async function uploadContentToGCS(
+  projectId: string,
+  content: string,
+  bucketName: string,
+  destination: string
+) {
+  const storage = new Storage({ projectId });
+
+  const file = storage.bucket(bucketName).file(destination);
+
+  await file.save(content, {
+    resumable: false,
+    contentType: "application/json; charset=utf-8",
+    metadata: {
+      cacheControl: "no-store",
+    },
+  });
+}

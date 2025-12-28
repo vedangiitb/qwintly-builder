@@ -1,4 +1,4 @@
-export interface logicCapabilies {
+export interface LogicCapabilities {
   services: services;
   hooks: hooks;
   lib: lib;

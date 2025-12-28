@@ -1,5 +1,8 @@
+import { ProjectDetails } from "./index/projectDetails/projectDetails.js";
+
 export interface pmMessage {
   tasks: pmTask[];
+  newInfo: ProjectDetails;
 }
 
 export interface pmTask {

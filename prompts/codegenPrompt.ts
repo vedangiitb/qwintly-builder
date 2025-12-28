@@ -1,6 +1,6 @@
-import { codegenContextInterface } from "../types/codegenContext/codegenContext.js";
+import { CodegenContextInterface } from "../types/codegenContext/codegenContext.js";
 
-export const codegenPrompt = (context: codegenContextInterface) => {
+export const codegenPrompt = (context: CodegenContextInterface) => {
   return `
 You are a **Senior Software Engineer** working on a production-grade codebase.
 
@@ -35,7 +35,7 @@ ${context.code || "// (No existing code — new file)"}
 
 ---
 
-## Project Specifications (MANDATORY)
+## Project Specifications
 
 ${JSON.stringify(context.specifications, null, 2)}
 

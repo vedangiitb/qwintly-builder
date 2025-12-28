@@ -4,21 +4,25 @@ import { tlAgentPrompt } from "../../prompts/tlAgentPrompt.js";
 import { createTaskImpl } from "../../tools/implementations/createTaskImpl.js";
 import { CreateTasksSchema } from "../../tools/schemas/createTasks.schema.js";
 import { tlAgentTools } from "../../tools/toolsets/tlAgentTools.js";
-import { codeIndex } from "../../types/codeIndex/codeIndex.js";
+import { CodeIndex } from "../../types/index/codeIndex.js";
 import { pmMessage } from "../../types/pmMessage.js";
 import { createTaskList } from "../../types/tlTasks.interface.js";
 
 export async function planTasks(
   ctx: JobContext,
   pmMessage: pmMessage,
-  codeIndex: codeIndex
+  codeIndex: CodeIndex
 ) {
   const tasks = pmMessage.tasks;
+  const projectDetails = pmMessage.newInfo;
 
   try {
-    const response = await aiResponse(tlAgentPrompt(tasks, codeIndex), {
-      tools: tlAgentTools(),
-    });
+    const response = await aiResponse(
+      tlAgentPrompt(tasks, codeIndex, projectDetails),
+      {
+        tools: tlAgentTools(),
+      }
+    );
 
     if (!response.functionCalls || response.functionCalls.length === 0) {
       throw new Error("No function call found in the response.");

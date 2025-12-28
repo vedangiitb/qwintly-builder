@@ -1,8 +1,10 @@
-import { codeIndex } from "../types/codeIndex/codeIndex.js";
+import { CodeIndex } from "../types/index/codeIndex.js";
+import { ProjectDetails } from "../types/index/projectDetails/projectDetails.js";
 import { pmTask } from "../types/pmMessage.js";
 export const tlAgentPrompt = (
   pmTasks: pmTask[],
-  codeIndex: codeIndex
+  codeIndex: CodeIndex,
+  projectDetails: ProjectDetails
 ): string => {
   return `
 You are a senior Tech Lead converting PM requirements into executable
@@ -14,6 +16,9 @@ OUTPUT (MANDATORY)
 - tasks.length MUST equal pmTasks.length
 - ONE task per PM task, same order
 - NO text outside the function call
+
+Project Details :
+${JSON.stringify(projectDetails, null, 2)}
 
 INPUTS (AUTHORITATIVE)
 Codebase index:

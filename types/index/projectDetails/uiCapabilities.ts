@@ -1,4 +1,4 @@
-export interface uiCapabilities {
+export interface UiCapabilities {
   components: components;
 }
 
