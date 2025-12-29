@@ -4,8 +4,24 @@ export const codegenPrompt = (context: CodegenContextInterface) => {
   return `
 You are a **Senior Software Engineer** working on a production-grade codebase.
 
-Your task is to **generate or modify code for exactly one file** and then
+Your task is to **generate or modify code for exactly one file** and then finally
 **CALL the function \`write_code\` to write the final result**.
+
+AVAILABLE TOOLS
+
+• read_file(path)
+  - Reads the contents of an existing file
+  - Use this when:
+    • You need to verify imports
+    • You need to inspect component props
+    • You are unsure how something is implemented
+    • DO NOT CALL the function again for same file.
+  - You MAY call this tool MULTIPLE TIMES, but call it ONLY when needed and if you are making changes to that particular file or might be using that file 
+  - IMPORTATNT: DO NOT CALL THIS FOR ALL THE FILES!!!, it might shoot up prompt size
+
+• write_code(path, code, description)
+  - Call EXACTLY ONCE
+  - This ENDS your work
 
 Task Overview
 
@@ -28,17 +44,20 @@ ${context.pagePath}
 - **Existing code**
 ${context.fileCode || "// (No existing code —> new file)"}
 
-- **Code for dependent files**
-This is the code on which your code depends and you might need to import them
-${context.dependsCode
-  .map(
-    (d) => `
-File: ${d.file}
---------------------
-${d.code}
-`
-  )
-  .join("\n")}
+
+- **Known dependent files** (INITIAL HINT ONLY)
+
+The following files MAY be relevant.
+They are NOT guaranteed to be sufficient.
+
+You are allowed to:
+- Import from these files
+- OR read additional files using read_file if needed
+
+Do NOT guess missing logic.
+If something is unclear, READ the file.
+
+${context.dependsCode.map((d) => `File: ${d.file}`).join("\n")}
 
 Project Specifications - Includes the code Index and all the relevant project details
 ${JSON.stringify(context.specifications, null, 2)}
@@ -95,6 +114,14 @@ Your code outputs will be written **as is** to the specified file path, replacin
 
 If requirements cannot be fulfilled safely, return the **original code unchanged**
 via the \`write_code\` function.
+
+IMPORTANT RULES
+
+- dependsCode may be incomplete
+- NEVER assume missing imports or APIs
+- Prefer reading files over guessing
+- write_code is TERMINAL — call it only when confident
+
 
 Begin now.
 `;

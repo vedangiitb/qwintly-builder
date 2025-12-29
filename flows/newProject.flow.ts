@@ -26,6 +26,8 @@ export async function runNewProjectFlow(ctx: JobContext) {
     retries: 1,
   });
 
+  console.log(tasks)
+
   await step(ctx, "Working on Coding Tasks", () => codegenService(ctx, tasks, codeIndex), {
     retries: 1,
   });

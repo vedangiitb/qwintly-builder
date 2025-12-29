@@ -34,6 +34,7 @@ export async function readFile(path: string) {
   try {
     return await fs.readFile(path, "utf-8");
   } catch (err) {
+    console.log("Error while reading file" + path);
     return "";
   }
 }

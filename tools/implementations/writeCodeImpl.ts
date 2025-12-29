@@ -8,10 +8,6 @@ export const writeCode = async (
 ) => {
   const fileContent = `//DESC_START ${description} DESC_END \n${code}`;
 
-  console.log("FILE CONTENT");
-
-  console.log(fileContent);
-
   const dirPath = path.dirname(filePath);
 
   await createFolder(dirPath);
