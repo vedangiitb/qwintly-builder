@@ -6,6 +6,12 @@ export interface CodegenContextInterface {
   pagePath: string;
   requirements: string;
   content: string;
+  fileCode: string;
+  dependsCode: DependsCode[];
+}
+
+export interface DependsCode {
+  file: string;
   code: string;
 }
 

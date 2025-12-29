@@ -1,6 +1,7 @@
 import { JobContext } from "../../job/jobContext.js";
 import { CodeIndex } from "../../types/index/codeIndex.js";
 import { creatTaskInterface } from "../../types/tlTasks.interface.js";
+import { getProjectStructure } from "../indexer/helpers/getProjectStructure.js";
 import { codegenContext } from "../resolvers/codegen.resolver.js";
 import { generateCode } from "./generateCode.js";
 
@@ -13,7 +14,10 @@ export const codegenService = async (
     throw new Error("No tasks provided to codegen service.");
   }
   for (const task of tasks) {
-    const codegen_context = await codegenContext(ctx, codeIndex, task);
+    let codegen_context = await codegenContext(ctx, codeIndex, task);
+    codegen_context.specifications.projectStructure = await getProjectStructure(
+      ctx
+    );
     console.log(codegen_context);
     await generateCode(codegen_context);
   }

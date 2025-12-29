@@ -1,11 +1,12 @@
 export interface createTaskList {
-    tasks: creatTaskInterface[]
+  tasks: creatTaskInterface[];
 }
 
 export interface creatTaskInterface {
-    task_id: string;
-    description: string;
-    content: string;
-    isNewPage: boolean;
-    pagePath: string;
+  task_id: string;
+  description: string;
+  content: string;
+  isNewPage: boolean;
+  pagePath: string;
+  depends: string[];
 }

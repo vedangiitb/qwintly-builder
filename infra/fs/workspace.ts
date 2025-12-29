@@ -31,7 +31,11 @@ export async function readDir(path: string) {
 }
 
 export async function readFile(path: string) {
-  return await fs.readFile(path, "utf-8");
+  try {
+    return await fs.readFile(path, "utf-8");
+  } catch (err) {
+    return "";
+  }
 }
 
 export async function readTsFiles(dir: string, results: any[] = []) {

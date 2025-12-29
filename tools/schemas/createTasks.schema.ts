@@ -16,6 +16,7 @@ export const CreateTasksSchema = {
             content: { type: Type.STRING },
             isNewPage: { type: Type.BOOLEAN },
             pagePath: { type: Type.STRING },
+            depends: { type: Type.ARRAY, items: { type: Type.STRING } },
           },
           required: [
             "task_id",
@@ -23,6 +24,7 @@ export const CreateTasksSchema = {
             "content",
             "isNewPage",
             "pagePath",
+            "depends"
           ],
         },
       },

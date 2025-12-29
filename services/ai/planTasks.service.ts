@@ -52,19 +52,25 @@ export async function planTasks(
         !task.description ||
         task.content === undefined ||
         task.isNewPage === undefined ||
-        !task.pagePath
+        !task.pagePath ||
+        !task.depends ||
+        !Array.isArray(task.depends) ||
+        !task.depends.every((d: any) => typeof d === "string")
       ) {
         throw new Error(
           `Invalid task object received: ${JSON.stringify(task)}`
         );
       }
 
+      const depends = Array.isArray(task.depends) ? task.depends : [];
+
       const createdTask = await createTaskImpl(
         String(task.task_id),
         String(task.description),
         String(task.content),
         Boolean(task.isNewPage),
-        String(task.pagePath)
+        String(task.pagePath),
+        depends
       );
 
       taskList.tasks.push(createdTask);

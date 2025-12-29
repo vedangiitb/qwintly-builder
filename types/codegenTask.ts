@@ -4,4 +4,5 @@ export interface codegenTask {
   content: string;
   isNewPage: boolean;
   pagePath: string;
+  depends: string[];
 }

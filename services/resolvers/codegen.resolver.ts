@@ -2,7 +2,7 @@ import { JobContext } from "../../job/jobContext.js";
 import { CodegenContextInterface } from "../../types/codegenContext/codegenContext.js";
 import { codegenTask } from "../../types/codegenTask.js";
 import { CodeIndex } from "../../types/index/codeIndex.js";
-import { getFileCode } from "./helpers/getFileCode.js";
+import { getDependFilesCode, getFileCode } from "./helpers/getFileCode.js";
 
 export const codegenContext = async (
   ctx: JobContext,
@@ -17,7 +17,8 @@ export const codegenContext = async (
     pagePath: path,
     requirements: task.description,
     content: task.content,
-    code: await getFileCode(task.isNewPage, path),
+    fileCode: await getFileCode(task.isNewPage, path),
+    dependsCode: await getDependFilesCode(ctx, task.depends),
   };
 
   return codegen_context;

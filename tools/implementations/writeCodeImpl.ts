@@ -6,14 +6,14 @@ export const writeCode = async (
   code: string,
   description: string
 ) => {
-  const fileContent = `// ${description}\n${code}`;
+  const fileContent = `//DESC_START ${description} DESC_END \n${code}`;
 
   console.log("FILE CONTENT");
 
   console.log(fileContent);
 
   const dirPath = path.dirname(filePath);
-  
+
   await createFolder(dirPath);
 
   await createFile(filePath, fileContent);

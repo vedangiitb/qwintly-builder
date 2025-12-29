@@ -5,7 +5,8 @@ export const createTaskImpl = async (
   description: string,
   content: string,
   isNewPage: boolean,
-  pagePath: string
+  pagePath: string,
+  depends: string[]
 ): Promise<creatTaskInterface> => {
   const task: creatTaskInterface = {
     task_id,
@@ -13,9 +14,9 @@ export const createTaskImpl = async (
     content,
     isNewPage,
     pagePath,
+    depends,
   };
 
-  // Optional: persist, enqueue, or store later
   console.log("Created task:", task);
 
   return task;
