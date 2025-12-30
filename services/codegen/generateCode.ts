@@ -1,12 +1,15 @@
 import { aiResponse } from "../../infra/ai/gemini.client.js";
+import { JobContext } from "../../job/jobContext.js";
 import { codegenPrompt } from "../../prompts/codegenPrompt.js";
 import { readFileImpl } from "../../tools/implementations/readFileImpl.js";
 import { writeCode } from "../../tools/implementations/writeCodeImpl.js";
+import { ReadFileSchema } from "../../tools/schemas/readFile.schema.js";
 import { writeCodeSchema } from "../../tools/schemas/writeCode.schema.js";
 import { codegenTools } from "../../tools/toolsets/codegenTools.js";
 import { CodegenContextInterface } from "../../types/codegenContext/codegenContext.js";
 
 export const generateCode = async (
+  ctx: JobContext,
   codegen_context: CodegenContextInterface
 ) => {
   let agentContext = codegenPrompt(codegen_context);
@@ -26,11 +29,11 @@ export const generateCode = async (
     // -----------------------------
     // READ FILE
     // -----------------------------
-    if (name === "read_file") {
+    if (name === ReadFileSchema.name) {
       const { path } = args as { path: string };
       console.log("Reading file" + path);
 
-      const fileContent = await readFileImpl(path);
+      const fileContent = await readFileImpl(ctx, path);
 
       agentContext += `
 
@@ -47,31 +50,6 @@ ${fileContent}
     }
 
     // -----------------------------
-    // INSPECT COMPONENT PROPS
-    // -----------------------------
-
-//     if (name === "inspect_component_props") {
-//       const { path } = args;
-
-//       const result = inspectComponentPropsImpl(path);
-
-//       agentContext += `
-  
-// ==============================
-// COMPONENT PROPS INSPECTION
-// File: ${path}
-// ==============================
-// Component: ${result.component}
-
-// Props:
-// ${JSON.stringify(result.props, null, 2)}
-
-// `;
-
-//       continue;
-//     }
-
-    // -----------------------------
     // WRITE CODE (TERMINAL)
     // -----------------------------
     if (name === writeCodeSchema.name) {
@@ -81,6 +59,7 @@ ${fileContent}
       }
 
       await writeCode(
+        ctx,
         args.path.toString(),
         args.code.toString(),
         args.description.toString()

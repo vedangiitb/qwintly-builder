@@ -108,7 +108,7 @@ Function Arguments
 - **path** → must be exactly:
   "${context.pagePath}"
 - **code** → the FULL final file contents
-- **description** → a human-readable description of the code (should also include previous description in case of already existing file)
+- **description** → a human-readable description of the code changes made by you now
 
 Your code outputs will be written **as is** to the specified file path, replacing the existing file if it exists.
 

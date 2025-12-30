@@ -25,7 +25,7 @@ type AIResponseOptions = {
 const DEFAULT_MODEL = "gemini-2.0-flash";
 
 export async function aiResponse(
-  request: string,
+  request: string | string[],
   options: AIResponseOptions = {}
 ) {
   const { tools, schema, model = DEFAULT_MODEL } = options;

@@ -18,6 +18,6 @@ export const codegenService = async (
     codegen_context.specifications.projectStructure = await getProjectStructure(
       ctx
     );
-    await generateCode(codegen_context);
+    await generateCode(ctx,codegen_context);
   }
 };

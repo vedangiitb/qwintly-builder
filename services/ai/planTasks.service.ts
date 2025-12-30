@@ -39,7 +39,7 @@ export async function planTasks(
       const { path } = args as { path: string };
       console.log("calling read file tool for", path);
 
-      const content = await readFileImpl(path);
+      const content = await readFileImpl(ctx, path);
       // Feed file contents back into the context
       agentContext += `
       

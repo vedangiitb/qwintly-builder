@@ -8,6 +8,7 @@ import { fetchCodeIndex } from "../services/project/fetchCodeIndex.service.js";
 import { getRequest } from "../services/project/getRequest.service.js";
 import { zipProject } from "../services/project/zipProject.service.js";
 import { uploadProjectSnapshot } from "../services/snapshot/uploadSnapshot.service.js";
+import { preflightValidator } from "../services/validator/preflightValidator.service.js";
 
 export async function runNewProjectFlow(ctx: JobContext) {
   await step(ctx, "Cloning Snapshot", () => cloneTemplate(ctx), {
@@ -18,7 +19,7 @@ export async function runNewProjectFlow(ctx: JobContext) {
     retries: 2,
   });
 
-  const codeIndex = await step(ctx, "Loading Code Index", () => fetchCodeIndex(ctx), {
+  let codeIndex = await step(ctx, "Loading Code Index", () => fetchCodeIndex(ctx), {
     retries: 2,
   });
 
@@ -29,6 +30,15 @@ export async function runNewProjectFlow(ctx: JobContext) {
   console.log(tasks)
 
   await step(ctx, "Working on Coding Tasks", () => codegenService(ctx, tasks, codeIndex), {
+    retries: 1,
+  });
+
+  // TODO: Have this as a global state
+  codeIndex = await step(ctx, "Loading Code Index", () => fetchCodeIndex(ctx), {
+    retries: 2,
+  });
+
+  await step(ctx, "Fixing build issues", () => preflightValidator(ctx,codeIndex), {
     retries: 1,
   });
 

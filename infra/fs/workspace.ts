@@ -67,7 +67,8 @@ export async function readTsFiles(dir: string, results: any[] = []) {
   return results;
 }
 
-const filterDescription = (content: string): string => {
+export const filterDescription = (content: string): string => {
+  if (!content) return "";
   const DESC_REGEX = /DESC_START([\s\S]*?)DESC_END/g;
   const match = DESC_REGEX.exec(content);
   DESC_REGEX.lastIndex = 0;
