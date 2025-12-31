@@ -12,8 +12,9 @@ import { uploadIndex } from "./uploadIndex.service.js";
 export const updateCodeIndex = async (
   ctx: JobContext,
   pmMessage: pmMessage,
-  codeIndex: CodeIndex
+  codeIndex: CodeIndex | undefined
 ) => {
+  if (!codeIndex) throw new Error("Failed to load codeindex.");
   const projectDetails: ProjectDetails = updateProjectDetails(pmMessage);
 
   const projectStructure: ProjectStructure = await getProjectStructure(ctx);

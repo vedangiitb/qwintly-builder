@@ -13,8 +13,9 @@ import { createTaskList } from "../../types/tlTasks.interface.js";
 export async function planTasks(
   ctx: JobContext,
   pmMessage: pmMessage,
-  codeIndex: CodeIndex
+  codeIndex: CodeIndex | undefined
 ) {
+  if (!codeIndex) throw new Error("Failed to load code index.");
   const tasks = pmMessage.tasks;
   const projectDetails = pmMessage.newInfo;
 

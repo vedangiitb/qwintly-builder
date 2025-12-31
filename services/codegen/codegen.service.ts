@@ -8,8 +8,9 @@ import { generateCode } from "./generateCode.js";
 export const codegenService = async (
   ctx: JobContext,
   tasks: creatTaskInterface[] | undefined,
-  codeIndex: CodeIndex
+  codeIndex: CodeIndex | undefined
 ) => {
+  if (!codeIndex) throw new Error("Failed to load code index.");
   if (!tasks || tasks.length === 0) {
     throw new Error("No tasks provided to codegen service.");
   }

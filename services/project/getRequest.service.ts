@@ -8,11 +8,11 @@ export async function getRequest(ctx: JobContext): Promise<any> {
     throw new Error("sessionId is required");
   }
 
-  const filePath = `requests/${sessionId}.json`;
-  const filePathTemp = `requests/pm_msg.json`;
+  // const filePath = `requests/${sessionId}.json`;
+  const filePath = `requests/pm_msg.json`;
 
   try {
-    return await downloadContentsGCS(filePathTemp, bucket);
+    return await downloadContentsGCS(filePath, bucket);
   } catch (err: any) {
     throw new Error(`Failed to load request for sessionId: ${sessionId}`);
   }

@@ -10,8 +10,9 @@ import { TypeScriptValidator } from "./validators/TypeScriptValidator.js";
 
 export const preflightValidator = async (
   ctx: JobContext,
-  codeIndex: CodeIndex
+  codeIndex: CodeIndex | undefined
 ) => {
+  if (!codeIndex) throw new Error("Failed to load code index.");
   const validators = {
     typescript: TypeScriptValidator,
     next: NextRulesValidator,
