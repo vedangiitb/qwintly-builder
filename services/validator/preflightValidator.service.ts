@@ -27,11 +27,12 @@ export const preflightValidator = async (
     "heuristic",
   ];
 
-  const MAX_STEPS = 10;
+  const MAX_STEPS = 4;
   let steps = 0;
 
   const globalHistory: ValidatorAgentHistory = [];
   while (steps < MAX_STEPS) {
+    console.log('step',steps)
     const allErrors: {
       type: keyof typeof validators;
       errors: PreflightErrorList;
@@ -39,6 +40,7 @@ export const preflightValidator = async (
 
     for (const [type, validator] of Object.entries(validators)) {
       const errors = await validator(ctx);
+      console.log(errors)
       if (errors.length > 0) {
         allErrors.push({ type: type as any, errors });
       }

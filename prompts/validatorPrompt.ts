@@ -78,7 +78,10 @@ PROCESS (MANDATORY)
 1. Read the file(s) that have errors using read_file.
 2. Decide the smallest change needed to fix the error.
 3. Modify the file using write_code. (In one call, you can only fix one file. If you need to fix multiple files, call write_code multiple times.)
-4. After all required fixes are applied, CALL finish_task.
+4. DO NOT call write_code for same file more than once. [After running write_code, you will get response: { ok: true }, which means the changes are successfully applied. You MUST NOT call write_code again for same file.]
+5. It is okay if you call write_code again for fixing a DIFFERENT ERROR, but you MUST NOT call write_code again for same error for the same file.
+5. After all required fixes are applied, CALL finish_task. YOU MUST CALL finish_task EXACTLY ONCE and at the end.
+
 
 STOP RULE (MANDATORY)
 

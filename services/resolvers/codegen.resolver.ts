@@ -9,15 +9,14 @@ export const codegenContext = async (
   codeIndex: CodeIndex,
   task: codegenTask
 ): Promise<CodegenContextInterface> => {
-  const path = ctx.workspace + "/" + task.pagePath;
 
   let codegen_context = {
     specifications: codeIndex,
     isNewFile: task.isNewPage,
-    pagePath: path,
+    pagePath: task.pagePath,
     requirements: task.description,
     content: task.content,
-    fileCode: await getFileCode(task.isNewPage, path),
+    fileCode: await getFileCode(ctx, task.isNewPage, task.pagePath),
     dependsCode: await getDependFilesCode(ctx, task.depends),
   };
 

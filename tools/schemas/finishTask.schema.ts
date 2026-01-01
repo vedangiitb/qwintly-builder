@@ -8,6 +8,6 @@ export const FinishTaskSchema = {
     properties: {
       finished: { type: Type.BOOLEAN },
     },
-    required: ["changes"],
+    required: ["finished"],
   },
 };

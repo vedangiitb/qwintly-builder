@@ -45,9 +45,7 @@ export async function runProjectFlow(ctx: JobContext) {
     () => planTasks(ctx, pmMessage, codeIndex),
     { retries: 0 }
   );
-
-  console.log(tasks);
-
+  
   await step(
     ctx,
     "Working on Coding Tasks",

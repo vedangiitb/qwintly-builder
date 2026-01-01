@@ -41,6 +41,8 @@ AVAILABLE TOOLS
     • DO NOT CALL the function again for same file.
   - You MAY call this tool MULTIPLE TIMES, but call it ONLY when needed and if you are making changes to that particular file or might be using that file 
   - IMPORTATNT: DO NOT CALL THIS FOR ALL THE FILES!!!, it might shoot up prompt size
+  - Call this function only when really needed, and required for planning tasks as it may shoot up token use. 
+  - You should NOT READ files in any folder other than /app folder. You need only these files to plan tasks.
 
 • create_task({ tasks })
   - Use ONLY after investigation is complete
@@ -50,7 +52,7 @@ AVAILABLE TOOLS
 IMPORTANT:
 - Do NOT guess file contents
 - Do NOT assume behavior without reading files
-- If unsure, READ the file first
+- If critically unsure AND the uncertainty blocks task creation, you MAY read ONE relevant file. You need to read files where you are going to make a change as per PM requirements. But there is no need to read other dependent files. If you think they are dependent, please pass them as dependent files to codegen agent
 
 
 MANDATORY OUTPUT RULES (STRICT)

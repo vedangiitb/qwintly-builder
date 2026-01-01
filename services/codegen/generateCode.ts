@@ -12,11 +12,23 @@ export const generateCode = async (
   ctx: JobContext,
   codegen_context: CodegenContextInterface
 ) => {
-  let agentContext = codegenPrompt(codegen_context);
+  // let agentContext = codegenPrompt(codegen_context);
+  const contents: any[] = [
+    {
+      role: "user",
+      parts: [
+        {
+          text: codegenPrompt(codegen_context),
+        },
+      ],
+    },
+  ];
   const MAX_ITERATIONS = 10;
 
+  const readFiles = new Map<string, string>();
+
   for (let step = 0; step < MAX_ITERATIONS; step++) {
-    const response = await aiResponse(agentContext, {
+    const response = await aiResponse(contents, {
       tools: codegenTools(),
     });
 
@@ -26,46 +38,128 @@ export const generateCode = async (
 
     const { name, args } = response.functionCalls[0];
 
+    contents.push({
+      role: "assistant",
+      parts: [
+        {
+          functionCall: {
+            name,
+            args,
+          },
+        },
+      ],
+    });
+
     // -----------------------------
     // READ FILE
     // -----------------------------
     if (name === ReadFileSchema.name) {
-      const { path } = args as { path: string };
-      console.log("Reading file" + path);
+      try {
+        const { path } = args as { path: string };
+        console.log("Generate code agent: Reading file", path);
 
-      const fileContent = await readFileImpl(ctx, path);
+        let content: string;
+        if (readFiles.has(path)) {
+          content = readFiles.get(path)!;
+        } else {
+          content = await readFileImpl(ctx, path);
+          readFiles.set(path, content);
+        }
 
-      agentContext += `
+        contents.push({
+          role: "user",
+          parts: [
+            {
+              functionResponse: {
+                name,
+                response: {
+                  ok: true,
+                  data: { path, content },
+                },
+              },
+            },
+          ],
+        });
 
-==============================
-FILE READ: ${path}
-==============================
-\`\`\`ts
-${fileContent}
-\`\`\`
+        continue;
+      } catch (err: any) {
+        contents.push({
+          role: "user",
+          parts: [
+            {
+              functionResponse: {
+                name,
+                response: {
+                  ok: false,
+                  error: {
+                    type: "READ_FILE_FAILED",
+                    message: err?.message ?? String(err),
+                    retryable: false,
+                  },
+                },
+              },
+            },
+          ],
+        });
 
-`;
-
-      continue;
+        continue;
+      }
     }
 
     // -----------------------------
     // WRITE CODE (TERMINAL)
     // -----------------------------
     if (name === writeCodeSchema.name) {
-      console.log("Writing code for file", args?.path?.toString());
-      if (!args?.path || !args?.code || !args?.description) {
-        throw new Error("Invalid write_code arguments.");
+      console.log("calling write code function")
+      try {
+        if (!args?.path || !args?.code || !args?.description) {
+          throw new Error("Missing required arguments");
+        }
+
+        await writeCode(
+          ctx,
+          args.path.toString(),
+          args.code.toString(),
+          args.description.toString()
+        );
+
+        contents.push({
+          role: "user",
+          parts: [
+            {
+              functionResponse: {
+                name,
+                response: {
+                  ok: true,
+                },
+              },
+            },
+          ],
+        });
+
+        return;
+      } catch (err: any) {
+        contents.push({
+          role: "user",
+          parts: [
+            {
+              functionResponse: {
+                name,
+                response: {
+                  ok: false,
+                  error: {
+                    type: "WRITE_CODE_FAILED",
+                    message: err?.message ?? String(err),
+                    retryable: false,
+                  },
+                },
+              },
+            },
+          ],
+        });
+
+        return;
       }
-
-      await writeCode(
-        ctx,
-        args.path.toString(),
-        args.code.toString(),
-        args.description.toString()
-      );
-
-      return;
     }
 
     throw new Error(`Unknown function call: ${name}`);

@@ -19,12 +19,26 @@ export async function planTasks(
   const tasks = pmMessage.tasks;
   const projectDetails = pmMessage.newInfo;
 
-  let agentContext = tlAgentPrompt(tasks, codeIndex, projectDetails);
+  const contents: any[] = [
+    {
+      role: "user",
+      parts: [
+        {
+          text: tlAgentPrompt(tasks, codeIndex, projectDetails),
+        },
+      ],
+    },
+  ];
 
   const MAX_ITERATIONS = 10;
 
+  const MAX_READS = 3;
+  let readCount = 0;
+
+  const readFiles = new Map<string, string>();
+
   for (let step = 0; step < MAX_ITERATIONS; step++) {
-    const response = await aiResponse(agentContext, {
+    const response = await aiResponse(contents, {
       tools: tlAgentTools(),
     });
 
@@ -33,27 +47,107 @@ export async function planTasks(
     }
 
     const { name, args } = response.functionCalls[0];
+
+    contents.push({
+      role: "assistant",
+      parts: [
+        {
+          functionCall: {
+            name,
+            args,
+          },
+        },
+      ],
+    });
     // ----------------------------
     // READ FILE TOOL
     // ----------------------------
     if (name === ReadFileSchema.name) {
-      const { path } = args as { path: string };
-      console.log("calling read file tool for", path);
+      if (readCount >= MAX_READS) {
+        console.log("Read limit exceeded");
+        contents.push({
+          role: "user",
+          parts: [
+            {
+              functionResponse: {
+                name,
+                response: {
+                  ok: false,
+                  error: {
+                    type: "READ_LIMIT_EXCEEDED",
+                    message:
+                      "You have already read enough files. Stop investigation and create tasks now.",
+                    retryable: false,
+                  },
+                },
+              },
+            },
+          ],
+        });
+        continue;
+      }
 
-      const content = await readFileImpl(ctx, path);
-      // Feed file contents back into the context
-      agentContext += `
-      
-==============================
-FILE READ: ${path}
-==============================
-\`\`\`ts
-${content}
-\`\`\`
+      readCount++;
 
-`;
+      try {
+        const { path } = args as { path: string };
+        console.log("PlanTasks:Reading file", path);
 
-      continue;
+        let content: string;
+        if (readFiles.has(path)) {
+          content = readFiles.get(path)!;
+        } else {
+          content = await readFileImpl(ctx, path);
+          readFiles.set(path, content);
+        }
+
+        contents.push({
+          role: "user",
+          parts: [
+            {
+              functionResponse: {
+                name,
+                response: {
+                  ok: true,
+                  data: { path, content },
+                },
+              },
+            },
+          ],
+        });
+
+        contents.push({
+          role: "user",
+          parts: [
+            {
+              text: "Reminder: Excessive file reading is discouraged. Only read files strictly required for task planning.",
+            },
+          ],
+        });
+
+        continue;
+      } catch (err: any) {
+        contents.push({
+          role: "user",
+          parts: [
+            {
+              functionResponse: {
+                name,
+                response: {
+                  ok: false,
+                  error: {
+                    type: "READ_FILE_FAILED",
+                    message: err?.message ?? String(err),
+                    retryable: false,
+                  },
+                },
+              },
+            },
+          ],
+        });
+
+        continue;
+      }
     }
 
     // ----------------------------

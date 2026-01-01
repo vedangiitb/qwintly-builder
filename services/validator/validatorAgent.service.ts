@@ -18,7 +18,7 @@ export const validatorAgent = async (
   history: ValidatorAgentHistory,
   codeIndex: CodeIndex
 ): Promise<ValidatorAgentHistory> => {
-  const MAX_STEPS = 15;
+  const MAX_STEPS = 6;
   let steps = 0;
   let newHistory: ValidatorAgentHistory = [...history];
 
@@ -47,12 +47,24 @@ export const validatorAgent = async (
 
     const { name, args } = response.functionCalls[0];
 
+    contents.push({
+      role: "assistant",
+      parts: [
+        {
+          functionCall: {
+            name,
+            args,
+          },
+        },
+      ],
+    });
+
     // -----------------------------
     // READ FILE
     // -----------------------------
     if (name === ReadFileSchema.name) {
       const { path } = args as { path: string };
-      console.log("Reading file" + path);
+      console.log("Validator Agent: Reading file" + path);
       let content: string;
 
       if (readFiles.has(path)) {
@@ -88,6 +100,7 @@ export const validatorAgent = async (
       if (!args?.path || !args?.code || !args?.description) {
         throw new Error("Invalid write_code arguments.");
       }
+      console.log("code", args.path.toString(), args.code.toString());
 
       newHistory.push({
         file: args.path.toString(),
@@ -118,6 +131,7 @@ export const validatorAgent = async (
     // END OF CONVERSATION
     // -----------------------------
     if (name === FinishTaskSchema.name) {
+      console.log("Validation finished!");
       break;
     }
   }

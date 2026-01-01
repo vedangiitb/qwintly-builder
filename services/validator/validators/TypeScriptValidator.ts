@@ -1,60 +1,85 @@
 import { spawn } from "child_process";
+import path from "path";
+import fs from "fs";
 import { JobContext } from "../../../job/jobContext.js";
-import {
-  PreflightErrorList
-} from "../../../types/preflightError.js";
+import { PreflightErrorList } from "../../../types/preflightError.js";
 
 export const TypeScriptValidator = async (
   ctx: JobContext
 ): Promise<PreflightErrorList> => {
-  return new Promise((resolve, reject) => {
-    let stderr = "";
+  const tsconfigPath = path.join(ctx.workspace, "tsconfig.json");
 
-    const tsc = spawn("tsc", ["--noEmit", "--pretty", "false"], {
-      cwd: ctx.workspace,
-      stdio: ["ignore", "pipe", "pipe"],
+  if (!fs.existsSync(tsconfigPath)) {
+    return [
+      {
+        type: "typescript",
+        filePath: "tsconfig.json",
+        message: "tsconfig.json not found",
+      },
+    ];
+  }
+
+  return new Promise((resolve, reject) => {
+    let output = "";
+
+    const tsc = spawn(
+      "tsc",
+      ["--noEmit", "--pretty", "false", "--project", tsconfigPath],
+      {
+        cwd: ctx.workspace,
+        stdio: ["ignore", "pipe", "pipe"],
+      }
+    );
+
+    tsc.stdout.on("data", (d) => {
+      output += d.toString();
     });
 
     tsc.stderr.on("data", (d) => {
-      stderr += d.toString();
+      output += d.toString();
     });
 
-    tsc.on("error", (err) => {
-      reject(err); // infra failure
-    });
+    tsc.on("error", reject);
 
     tsc.on("close", (code) => {
       if (code === 0) {
         resolve([]);
-        return;
+      } else {
+        resolve(parseTsErrors(output));
       }
-
-      const errors = parseTsErrors(stderr);
-      resolve(errors);
     });
   });
 };
 
-function parseTsErrors(stderr: string): PreflightErrorList {
+const IGNORED_TS_CODES = new Set([
+  "TS2307",
+  "TS2875",
+  "TS7026",
+  "TS2503",
+  "TS2688",
+  "TS7016",
+]);
+
+function parseTsErrors(output: string): PreflightErrorList {
   const errors: PreflightErrorList = [];
 
-  const lines = stderr.split("\n").filter(Boolean);
+  const lines = output.split("\n").filter(Boolean);
 
   for (const line of lines) {
-    /**
-     * Example:
-     * src/app/page.tsx(12,18): error TS2339: Property 'user' does not exist on type 'Session'.
-     */
-    const match = line.match(/^(.*)\((\d+),(\d+)\): error TS\d+: (.*)$/);
+    const match = line.match(/^(.*)\((\d+),(\d+)\): error (TS\d+): (.*)$/);
 
     if (!match) continue;
 
-    const [, filePath] = match;
+    const [, filePath, , , code, message] = match;
+
+    if (IGNORED_TS_CODES.has(code)) {
+      continue; // ignore dependency noise
+    }
 
     errors.push({
       type: "typescript",
       filePath: filePath.trim(),
-      message: line.trim(),
+      message: `${code}: ${message.trim()}`,
     });
   }
 

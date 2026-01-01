@@ -11,7 +11,11 @@ export async function removeFolder(path: string) {
 }
 
 export async function createFile(path: string, content: string) {
-  await fs.writeFile(path, content, "utf-8");
+  try {
+    await fs.writeFile(path, content, "utf-8");
+  } catch (err) {
+    throw err;
+  }
 }
 
 export async function removeFile(path: string) {
@@ -34,7 +38,7 @@ export async function readFile(path: string) {
   try {
     return await fs.readFile(path, "utf-8");
   } catch (err) {
-    console.log("Error while reading file" + path);
+    console.log("Error while reading file for the path " + path);
     return "";
   }
 }
