@@ -1,7 +1,7 @@
 export type PreflightErrorList = PreflightError[];
 
 export type PreflightError = {
-  type: "typescript" | "eslint" | "next" | "heuristic";
+  type: "typescript" | "next" | "heuristic";
   filePath: string | null;
   message: string;
 };

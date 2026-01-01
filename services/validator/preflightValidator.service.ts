@@ -3,7 +3,6 @@ import { CodeIndex } from "../../types/index/codeIndex.js";
 import { PreflightErrorList } from "../../types/preflightError.js";
 import { ValidatorAgentHistory } from "../../types/validatorAgentHistory.js";
 import { validatorAgent } from "./validatorAgent.service.js";
-import { ESLintValidator } from "./validators/ESLintValidator.js";
 import { HeuristicValidator } from "./validators/HeuristicValidator.js";
 import { NextRulesValidator } from "./validators/NextRulesValidator.js";
 import { TypeScriptValidator } from "./validators/TypeScriptValidator.js";
@@ -16,14 +15,12 @@ export const preflightValidator = async (
   const validators = {
     typescript: TypeScriptValidator,
     next: NextRulesValidator,
-    eslint: ESLintValidator,
     heuristic: HeuristicValidator,
   };
 
   const PRIORITY: (keyof typeof validators)[] = [
     "typescript",
     "next",
-    "eslint",
     "heuristic",
   ];
 

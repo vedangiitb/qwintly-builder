@@ -6,9 +6,8 @@ COPY package*.json ./
 RUN npm ci
 
 RUN npm install -g typescript \
-    && npm install -g @types/node @types/react @types/react-dom \
-    && npm install -g eslint eslint-plugin-react eslint-plugin-react-hooks
-
+    && npm install -g @types/node @types/react @types/react-dom
+    
 COPY . .
 
 RUN npm run build
