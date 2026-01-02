@@ -5,7 +5,6 @@ import { ValidatorAgentHistory } from "../../types/validatorAgentHistory.js";
 import { validatorAgent } from "./validatorAgent.service.js";
 import { HeuristicValidator } from "./validators/HeuristicValidator.js";
 import { NextRulesValidator } from "./validators/NextRulesValidator.js";
-import { TypeScriptValidator } from "./validators/TypeScriptValidator.js";
 
 export const preflightValidator = async (
   ctx: JobContext,
@@ -13,23 +12,18 @@ export const preflightValidator = async (
 ) => {
   if (!codeIndex) throw new Error("Failed to load code index.");
   const validators = {
-    typescript: TypeScriptValidator,
     next: NextRulesValidator,
     heuristic: HeuristicValidator,
   };
 
-  const PRIORITY: (keyof typeof validators)[] = [
-    "typescript",
-    "next",
-    "heuristic",
-  ];
+  const PRIORITY: (keyof typeof validators)[] = ["next", "heuristic"];
 
   const MAX_STEPS = 4;
   let steps = 0;
 
   const globalHistory: ValidatorAgentHistory = [];
   while (steps < MAX_STEPS) {
-    console.log('step',steps)
+    console.log("step", steps);
     const allErrors: {
       type: keyof typeof validators;
       errors: PreflightErrorList;
@@ -37,7 +31,7 @@ export const preflightValidator = async (
 
     for (const [type, validator] of Object.entries(validators)) {
       const errors = await validator(ctx);
-      console.log(errors)
+      console.log(errors);
       if (errors.length > 0) {
         allErrors.push({ type: type as any, errors });
       }
