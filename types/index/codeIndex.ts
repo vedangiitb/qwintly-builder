@@ -1,9 +1,9 @@
-import { ProjectConfig } from "./projectConfig/projectConfig.js";
-import { ProjectConventions } from "./projectConventions/projectConventions.js";
-import { ProjectStructure } from "./projectStructure/projectStructure.js";
+import { ProjectConfig } from "./projectConfig.js";
+import { ProjectConventions } from "./projectConventions.js";
+import { ProjectIndex } from "./projectIndex.js";
 
 export interface CodeIndex {
+  projectIndex: ProjectIndex;
   projectConfig: ProjectConfig;
   projectConventions: ProjectConventions;
-  projectStructure: ProjectStructure;
 }
