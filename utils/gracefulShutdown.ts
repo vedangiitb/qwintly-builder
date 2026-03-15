@@ -1,3 +1,5 @@
+import { logger } from "./logger.js";
+
 type CleanupFn = () => Promise<void> | void;
 
 const cleanups: CleanupFn[] = [];
@@ -29,11 +31,13 @@ export async function shutdown(
   if (shuttingDown) return shutdownPromise || Promise.resolve();
   shuttingDown = true;
   process.exitCode = code;
-  if (reason) console.log("Shutting down: " + reason);
+  if (reason) logger.info("Shutting down", { reason, code });
 
   const tasks = cleanups.map((fn) =>
     runCleanupWithTimeout(fn, timeoutMs).catch((err) => {
-      console.error("Cleanup failed:", err && err.message ? err.message : err);
+      logger.error("Cleanup failed", {
+        err: err && err.message ? err.message : err,
+      });
     })
   );
 
@@ -49,25 +53,27 @@ export async function safeExit(code = 0, reason?: string) {
 
 // Register global handlers on import so the process becomes resilient to signals
 process.on("SIGINT", () => {
-  console.log("Received SIGINT");
-  shutdown(130, "SIGINT").catch((e) => console.error(e));
+  logger.warn("Received SIGINT");
+  shutdown(130, "SIGINT").catch((e) => logger.error("SIGINT shutdown failed", { err: e }));
 });
 
 process.on("SIGTERM", () => {
-  console.log("Received SIGTERM");
-  shutdown(143, "SIGTERM").catch((e) => console.error(e));
+  logger.warn("Received SIGTERM");
+  shutdown(143, "SIGTERM").catch((e) => logger.error("SIGTERM shutdown failed", { err: e }));
 });
 
 process.on("unhandledRejection", (reason) => {
-  console.error("Unhandled rejection:", reason);
-  shutdown(1, "unhandledRejection").catch((e) => console.error(e));
+  logger.error("Unhandled rejection", { err: reason });
+  shutdown(1, "unhandledRejection").catch((e) =>
+    logger.error("Unhandled rejection shutdown failed", { err: e })
+  );
 });
 
 process.on("uncaughtException", (err) => {
-  console.error("Uncaught exception:", err);
+  logger.error("Uncaught exception", { err });
   // Ensure cleanup runs and then exit with failure
   shutdown(1, "uncaughtException")
-    .catch((e) => console.error(e))
+    .catch((e) => logger.error("Uncaught exception shutdown failed", { err: e }))
     .finally(() => process.exit(1));
 });
 
