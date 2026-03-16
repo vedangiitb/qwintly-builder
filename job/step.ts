@@ -1,5 +1,5 @@
 // job/step.ts
-import { sendLog } from "../utils/logger.js";
+import { logger, sendLog } from "../utils/logger.js";
 import { JobContext } from "./jobContext.js";
 import { isStepDone } from "./stepDone.js";
 
@@ -14,7 +14,7 @@ export async function step<T>(
   const retries = options?.retries ?? 0;
 
   if (await isStepDone(ctx, name)) {
-    console.log(`SKIP ${name}`);
+    logger.info("Skipping step", { step: name });
     return;
   }
 

@@ -1,12 +1,20 @@
 // Session/workspace/env context
 import {
-  GEN_PROJECT_ID,
-  REQUEST_BUCKET_NAME,
+  GCP_PROJECT_ID_QWINTLY,
   REQUEST_TYPE,
   SESSION_ID,
-  SNAPSHOT_BUCKET_NAME,
-  INDEX_BUCKET,
+  SNAPSHOT_BUCKET,
+  TASKS_PLAN_ID,
+  TEMPLATE_BUCKET
 } from "../config/env.js";
+
+/*
+ * Job context from Worker
+ * SESSION_ID, REQUEST_TYPE & TASKS_PLAN_ID
+ *
+ * Env secrets/variables
+ * SNAPSHOT_BUCKET, GCP_PROJECT_ID_QWINTLY, TEMPLATE_BUCKET
+ */
 
 export function createJobContext() {
   if (!SESSION_ID || !REQUEST_TYPE) {
@@ -16,15 +24,12 @@ export function createJobContext() {
   return {
     sessionId: SESSION_ID,
     requestType: REQUEST_TYPE,
-    workspace: `/tmp/workspace/${SESSION_ID}`,
+    tasksPlanId: TASKS_PLAN_ID,
+    workspace: `/tmp/workspace`,
     zipPath: `/tmp/${SESSION_ID}.zip`,
-    requestsBucket: REQUEST_BUCKET_NAME || "qwintly-builder-requests",
-    snapshotBucket: SNAPSHOT_BUCKET_NAME || "qwintly-project-snapshots",
-    templateBucket: "qwintly-builder-templates",
-    genProjectId: GEN_PROJECT_ID,
-    codeIndexBucket: INDEX_BUCKET || "qwintly-code-indexes",
-    projectId: "qwintly",
-    pmIndexBucket: "qwintly-pm-indexes",
+    snapshotBucket: SNAPSHOT_BUCKET,
+    projectId: GCP_PROJECT_ID_QWINTLY,
+    templateBucket: TEMPLATE_BUCKET,
   };
 }
 
