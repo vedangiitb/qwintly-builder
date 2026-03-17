@@ -6,14 +6,14 @@ import {
 } from "@google/genai";
 import type { ZodSchema } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
-import { GOOGLE_GENAI_API_KEY } from "../../config/env.js";
+import { GEMINI_API_KEY } from "../../config/env.js";
 
-if (!GOOGLE_GENAI_API_KEY) {
-  throw new Error("GOOGLE_GENAI_API_KEY is not defined");
+if (!GEMINI_API_KEY) {
+  throw new Error("GEMINI_API_KEY is not defined");
 }
 
 export const ai = new GoogleGenAI({
-  apiKey: GOOGLE_GENAI_API_KEY,
+  apiKey: GEMINI_API_KEY,
 });
 
 type AIResponseOptions = {
