@@ -16,12 +16,14 @@ export const writeCode = async (
 ) => {
   try {
     let fullPath: string;
-    if (filePath.startsWith("/tmp") || filePath.startsWith("tmp")) {
-      const path1 = path.relative(ctx.workspace, filePath);
-      fullPath = ctx.workspace +  (path1.startsWith("/") ? "" : "/") + path1;
-    } else {
-      fullPath = ctx.workspace + (filePath.startsWith("/") ? "" : "/") + filePath;
+    let normalizedPath = filePath;
+    if (normalizedPath.startsWith("/tmp/workspace")) {
+      normalizedPath = normalizedPath.slice("/tmp/workspace".length);
+    } else if (normalizedPath.startsWith("tmp/workspace")) {
+      normalizedPath = normalizedPath.slice("tmp/workspace".length);
     }
+    normalizedPath = normalizedPath.replace(/^[\/\\]+/, "");
+    fullPath = path.join(ctx.workspace, normalizedPath);
 
     const dirPath = path.dirname(fullPath);
 
