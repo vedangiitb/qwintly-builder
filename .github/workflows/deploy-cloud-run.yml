@@ -38,7 +38,7 @@ jobs:
       - name: Build Docker Image
         run: |
           IMAGE=${{ vars.REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID_QWINTLY }}/qwintly-images/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          
+
           gcloud builds submit \
             --tag $IMAGE \
             .
@@ -58,4 +58,5 @@ jobs:
             --max-instances=3 \
             --min-instances=0 \
             --timeout=420 \
-            --set-env-vars="SNAPSHOT_BUCKET=${{ vars.SNAPSHOT_BUCKET }},TEMPLATE_BUCKET=${{ vars.TEMPLATE_BUCKET }},GCP_PROJECT_ID_QWINTLY=${{ vars.GCP_PROJECT_ID_QWINTLY }},NEXT_PUBLIC_SUPABASE_URL=supabase-url:latest,SUPABASE_SECRET_KEY=supabase-secret-key:latest,GEMINI_API_KEY=gemini-api-key:latest"
+            --set-env-vars="SNAPSHOT_BUCKET=${{ vars.SNAPSHOT_BUCKET }},TEMPLATE_BUCKET=${{ vars.TEMPLATE_BUCKET }},GCP_PROJECT_ID_QWINTLY=${{ vars.GCP_PROJECT_ID_QWINTLY }}" \
+            --set-secrets="NEXT_PUBLIC_SUPABASE_URL=supabase-url:latest,SUPABASE_SECRET_KEY=supabase-secret-key:latest,GEMINI_API_KEY=gemini-api-key:latest"
