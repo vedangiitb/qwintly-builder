@@ -53,6 +53,7 @@ jobs:
             --platform=managed \
             --allow-unauthenticated \
             --cpu=1 \
+            --service-account ${{ vars.BUILDER_SA_EMAIL }} \
             --memory=512Mi \
             --concurrency=80 \
             --max-instances=3 \
