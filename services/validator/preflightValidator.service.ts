@@ -5,12 +5,16 @@ import { ValidatorAgentHistory } from "../../types/validatorAgentHistory.js";
 import { validatorAgent } from "./validatorAgent.service.js";
 import { HeuristicValidator } from "./validators/HeuristicValidator.js";
 import { NextRulesValidator } from "./validators/NextRulesValidator.js";
+import { logger } from "../../utils/logger.js";
 
 export const preflightValidator = async (
   ctx: JobContext,
-  codeIndex: CodeIndex | undefined
+  codeIndex: CodeIndex
 ) => {
   if (!codeIndex) throw new Error("Failed to load code index.");
+  const skipAgent = ["1", "true", "yes"].includes(
+    (process.env.SKIP_VALIDATOR_AGENT ?? "").toLowerCase()
+  );
   const validators = {
     next: NextRulesValidator,
     heuristic: HeuristicValidator,
@@ -23,7 +27,7 @@ export const preflightValidator = async (
 
   const globalHistory: ValidatorAgentHistory = [];
   while (steps < MAX_STEPS) {
-    console.log("step", steps);
+    logger.info("Preflight validator step", { step: steps });
     const allErrors: {
       type: keyof typeof validators;
       errors: PreflightErrorList;
@@ -31,16 +35,27 @@ export const preflightValidator = async (
 
     for (const [type, validator] of Object.entries(validators)) {
       const errors = await validator(ctx);
-      console.log(errors);
+      logger.debug("Validator errors", { type, count: errors.length });
       if (errors.length > 0) {
         allErrors.push({ type: type as any, errors });
       }
     }
 
-    console.log(allErrors);
+    logger.info("Preflight validation summary", {
+      errorTypes: allErrors.map((e) => e.type),
+      total: allErrors.reduce((acc, cur) => acc + cur.errors.length, 0),
+    });
 
     if (allErrors.length === 0) {
       return { ok: true, history: globalHistory };
+    }
+
+    if (skipAgent) {
+      return {
+        ok: false,
+        reason: "Preflight errors detected",
+        errors: allErrors,
+      };
     }
 
     let selected;

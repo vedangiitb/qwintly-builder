@@ -1,9 +1,12 @@
-import { ProjectRequestType } from "../../data/project.constants.js";
-import { templates } from "../../data/templates.constants.js";
+import {
+  ProjectPathConstants,
+  ProjectRequestType,
+} from "../../data/project.constants.js";
 import { createFolder, removeFolder } from "../../infra/fs/workspace.js";
 import { extractZip } from "../../infra/fs/zipFolder.js";
 import { downloadToDestinationGCS } from "../../infra/gcs/download.js";
 import { JobContext } from "../../job/jobContext.js";
+import { logger } from "../../utils/logger.js";
 
 export async function cloneTemplate(ctx: JobContext) {
   const workspacePath = ctx.workspace;
@@ -11,18 +14,20 @@ export async function cloneTemplate(ctx: JobContext) {
 
   let bucketName: string;
   let zipPath: string;
-  const tmpZipPath = `/tmp/template_${sessionId}.zip`;
+  const tmpZipPath = ProjectPathConstants(sessionId).tmpZipPath;
 
   if (ctx.requestType === ProjectRequestType.NEW) {
-    bucketName = templates.bucket;
-    zipPath = templates.zip.default;
+    bucketName = ctx.templateBucket!;
+    zipPath = ProjectPathConstants("").baseTemplate;
   } else {
-    bucketName = ctx.snapshotBucket;
-    zipPath = `projects/${sessionId}.zip`;
+    bucketName = ctx.snapshotBucket!;
+    zipPath = ProjectPathConstants(sessionId).snapShotPath;
   }
-  console.log(
-    `Fetching template ${zipPath} from GCS bucket ${bucketName} into ${workspacePath}`
-  );
+  logger.info("Fetching template", {
+    zipPath,
+    bucketName,
+    workspacePath,
+  });
 
   await createFolder(workspacePath);
 
@@ -30,10 +35,16 @@ export async function cloneTemplate(ctx: JobContext) {
     await downloadToDestinationGCS(tmpZipPath, zipPath, bucketName);
     await extractZip(tmpZipPath, workspacePath);
   } catch (err) {
+    logger.error("Failed to load template from GCS", {
+      zipPath,
+      bucketName,
+      workspacePath,
+      err,
+    });
     throw new Error(`Failed to load template from GCS: ${err}`);
   } finally {
     await removeFolder(tmpZipPath);
   }
 
-  console.log(`Template ready at ${workspacePath}`);
+  logger.info("Template ready", { workspacePath });
 }

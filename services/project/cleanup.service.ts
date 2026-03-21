@@ -1,6 +1,7 @@
 import { removeFile, removeFolder } from "../../infra/fs/workspace.js";
 import { JobContext } from "../../job/jobContext.js";
 import { registerCleanupUtil } from "../../utils/gracefulShutdown.js";
+import { logger } from "../../utils/logger.js";
 
 export const registerCleanup = (ctx: JobContext) => {
   const workspace = ctx.workspace;
@@ -8,9 +9,9 @@ export const registerCleanup = (ctx: JobContext) => {
   registerCleanupUtil(async () => {
     try {
       await removeFolder(workspace);
-      console.log("Workspace removed: " + workspace);
+      logger.info("Workspace removed", { workspace });
     } catch (e) {
-      console.warn("Failed to remove workspace: " + e);
+      logger.warn("Failed to remove workspace", { workspace, err: e });
     }
   });
 
@@ -18,7 +19,7 @@ export const registerCleanup = (ctx: JobContext) => {
     try {
       await removeFile(zipPath);
     } catch (e) {
-      console.error(e || "Error occured while cleaning up zip file");
+      logger.error("Failed to clean up zip file", { zipPath, err: e });
     }
   });
 };
