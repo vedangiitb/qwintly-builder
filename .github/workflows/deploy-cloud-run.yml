@@ -45,19 +45,15 @@ jobs:
 
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
-      - name: Deploy to Cloud Run
+      - name: Deploy Cloud Run Job
         run: |
           gcloud run jobs deploy $JOB_NAME \
             --image=$IMAGE \
             --region=${{ vars.REGION }} \
-            --platform=managed \
-            --allow-unauthenticated \
             --cpu=1 \
-            --service-account ${{ vars.BUILDER_SA_EMAIL }} \
             --memory=512Mi \
-            --concurrency=80 \
-            --max-instances=3 \
-            --min-instances=0 \
-            --timeout=420 \
+            --max-retries=1 \
+            --task-timeout=420 \
+            --service-account=${{ vars.BUILDER_SA_EMAIL }} \
             --set-env-vars="SNAPSHOT_BUCKET=${{ vars.SNAPSHOT_BUCKET }},TEMPLATE_BUCKET=${{ vars.TEMPLATE_BUCKET }},GCP_PROJECT_ID_QWINTLY=${{ vars.GCP_PROJECT_ID_QWINTLY }}" \
             --set-secrets="NEXT_PUBLIC_SUPABASE_URL=supabase-url:latest,SUPABASE_SECRET_KEY=supabase-secret-key:latest,GEMINI_API_KEY=gemini-api-key:latest"
