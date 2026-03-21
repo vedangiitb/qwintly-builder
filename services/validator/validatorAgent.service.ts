@@ -11,6 +11,7 @@ import { writeCodeSchema } from "../../tools/schemas/writeCode.schema.js";
 import { writeCode } from "../../tools/implementations/writeCodeImpl.js";
 import { FinishTaskSchema } from "../../tools/schemas/finishTask.schema.js";
 import { JobContext } from "../../job/jobContext.js";
+import { logger } from "../../utils/logger.js";
 
 export const validatorAgent = async (
   ctx: JobContext,
@@ -46,6 +47,7 @@ export const validatorAgent = async (
     }
 
     const { name, args } = response.functionCalls[0];
+    logger.info("Validator agent tool call", { toolName: name, args });
 
     contents.push({
       role: "assistant",
@@ -64,7 +66,7 @@ export const validatorAgent = async (
     // -----------------------------
     if (name === ReadFileSchema.name) {
       const { path } = args as { path: string };
-      console.log("Validator Agent: Reading file" + path);
+      logger.info("Validator agent reading file", { path });
       let content: string;
 
       if (readFiles.has(path)) {
@@ -96,11 +98,16 @@ export const validatorAgent = async (
     // WRITE CODE (TERMINAL)
     // -----------------------------
     if (name === writeCodeSchema.name) {
-      console.log("Writing code for file", args?.path?.toString());
+      logger.info("Validator agent writing code", {
+        path: args?.path?.toString(),
+      });
       if (!args?.path || !args?.code || !args?.description) {
         throw new Error("Invalid write_code arguments.");
       }
-      console.log("code", args.path.toString(), args.code.toString());
+      logger.debug("Validator agent write code payload", {
+        path: args.path.toString(),
+        codePreview: args.code.toString().slice(0, 500),
+      });
 
       newHistory.push({
         file: args.path.toString(),
@@ -131,7 +138,7 @@ export const validatorAgent = async (
     // END OF CONVERSATION
     // -----------------------------
     if (name === FinishTaskSchema.name) {
-      console.log("Validation finished!");
+      logger.info("Validation finished");
       break;
     }
   }

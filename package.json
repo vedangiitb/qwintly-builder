@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start:no-llm": "node dist/index.no-llm.js",
+    "test": "node --loader ts-node/esm --test tests/**/*.test.ts"
   },
   "repository": {
     "type": "git",
@@ -23,6 +24,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@types/archiver": "^7.0.0",
+    "@types/diff": "^7.0.2",
     "@types/node": "^24.10.4",
     "@types/unzipper": "^0.10.11",
     "@types/ws": "^8.18.1",
@@ -36,12 +38,18 @@
   "dependencies": {
     "@google-cloud/storage": "^7.18.0",
     "@google/genai": "^1.33.0",
+    "@langchain/core": "^0.3.19",
+    "@langchain/google-genai": "^0.1.11",
+    "@supabase/supabase-js": "^2.99.2",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "archiver": "^7.0.1",
+    "deepagents": "^0.0.2",
+    "diff": "^5.2.0",
     "dotenv": "^17.2.3",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
+    "langchain": "^0.3.16",
     "unzipper": "^0.12.3",
     "ws": "^8.18.3",
     "zod": "^4.2.1",

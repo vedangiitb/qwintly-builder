@@ -1,6 +1,7 @@
 // infra/fs/workspace.ts
 import fs from "fs/promises";
 import path from "path";
+import { logger } from "../../utils/logger.js";
 
 export async function createFolder(path: string) {
   await fs.mkdir(path, { recursive: true });
@@ -38,7 +39,10 @@ export async function readFile(path: string) {
   try {
     return await fs.readFile(path, "utf-8");
   } catch (err) {
-    console.log("Error while reading file for the path " + path);
+    const code = (err as NodeJS.ErrnoException | null)?.code;
+    if (code !== "ENOENT") {
+      logger.error("Error while reading file", { path, err });
+    }
     return "";
   }
 }

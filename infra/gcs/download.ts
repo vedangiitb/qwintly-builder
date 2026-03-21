@@ -1,6 +1,7 @@
 import { File, Storage } from "@google-cloud/storage";
+import { GCP_PROJECT_ID_QWINTLY } from "../../config/env.js";
 
-const storage = new Storage();
+const storage = new Storage({ projectId: GCP_PROJECT_ID_QWINTLY });
 
 async function getExistingFile(
   bucketName: string,

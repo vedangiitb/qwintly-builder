@@ -1,19 +1,19 @@
-import { downloadContentsGCS } from "../../infra/gcs/download.js";
-import { JobContext } from "../../job/jobContext.js";
+import { TaskPlansRepository } from "../../repository/planTasks.repository.js";
+import { PlanTask } from "../../types/updatePlan.types.js";
 
-export async function getRequest(ctx: JobContext): Promise<any> {
-  const sessionId = ctx.sessionId;
-  const bucket = ctx.requestsBucket;
-  if (!sessionId) {
-    throw new Error("sessionId is required");
+export async function fetchPlanTasks(planId: string): Promise<PlanTask[]> {
+  if (!planId) {
+    throw new Error("planId is required");
   }
 
-  // const filePath = `requests/${sessionId}.json`;
-  const filePath = `requests/pm_msg.json`;
+  const repo = new TaskPlansRepository();
 
   try {
-    return await downloadContentsGCS(filePath, bucket);
+    const { tasks } = await repo.fetchPlanTasksById(planId);
+    return tasks ?? [];
   } catch (err: any) {
-    throw new Error(`Failed to load request for sessionId: ${sessionId}`);
+    throw new Error(
+      `Failed to fetch plan tasks for planId ${planId}: ${err?.message ?? err}`,
+    );
   }
 }
