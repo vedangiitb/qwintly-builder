@@ -1,12 +1,12 @@
 import { File, Storage } from "@google-cloud/storage";
 import { GCP_PROJECT_ID_QWINTLY } from "../../config/env.js";
 
-const storage = new Storage({ projectId: GCP_PROJECT_ID_QWINTLY });
-
 async function getExistingFile(
   bucketName: string,
-  filePath: string
+  filePath: string,
+  project: string = GCP_PROJECT_ID_QWINTLY!,
 ): Promise<File> {
+  const storage = new Storage({ projectId: project });
   const file = storage.bucket(bucketName).file(filePath);
 
   const [exists] = await file.exists();
@@ -20,15 +20,16 @@ async function getExistingFile(
 export async function downloadToDestinationGCS(
   destination: string,
   filePath: string,
-  bucketName: string
+  bucketName: string,
+  projectId?: string,
 ): Promise<void> {
-  const file = await getExistingFile(bucketName, filePath);
+  const file = await getExistingFile(bucketName, filePath, projectId);
   await file.download({ destination });
 }
 
 export async function downloadContentsGCS<T = unknown>(
   filePath: string,
-  bucketName: string
+  bucketName: string,
 ): Promise<T> {
   const file = await getExistingFile(bucketName, filePath);
   const [contents] = await file.download();
