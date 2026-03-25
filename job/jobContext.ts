@@ -5,7 +5,7 @@ import {
   SESSION_ID,
   SNAPSHOT_BUCKET,
   TASKS_PLAN_ID,
-  TEMPLATE_BUCKET
+  TEMPLATE_BUCKET,
 } from "../config/env.js";
 
 /*
@@ -30,6 +30,7 @@ export function createJobContext() {
     snapshotBucket: SNAPSHOT_BUCKET,
     projectId: GCP_PROJECT_ID_QWINTLY,
     templateBucket: TEMPLATE_BUCKET,
+    genSitesProjectId: process.env.GEN_SITES_PROJECT_ID,
   };
 }
 

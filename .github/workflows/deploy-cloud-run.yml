@@ -1,4 +1,4 @@
-name: Deploy Worker Service
+name: Deploy Builder Job
 
 on:
   push:

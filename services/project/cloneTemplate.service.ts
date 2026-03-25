@@ -14,6 +14,7 @@ export async function cloneTemplate(ctx: JobContext) {
 
   let bucketName: string;
   let zipPath: string;
+  let projectId: string = ctx.projectId!;
   const tmpZipPath = ProjectPathConstants(sessionId).tmpZipPath;
 
   if (ctx.requestType === ProjectRequestType.NEW) {
@@ -22,6 +23,7 @@ export async function cloneTemplate(ctx: JobContext) {
   } else {
     bucketName = ctx.snapshotBucket!;
     zipPath = ProjectPathConstants(sessionId).snapShotPath;
+    projectId = ctx.genSitesProjectId!;
   }
   logger.info("Fetching template", {
     zipPath,
@@ -32,7 +34,7 @@ export async function cloneTemplate(ctx: JobContext) {
   await createFolder(workspacePath);
 
   try {
-    await downloadToDestinationGCS(tmpZipPath, zipPath, bucketName);
+    await downloadToDestinationGCS(tmpZipPath, zipPath, bucketName,projectId);
     await extractZip(tmpZipPath, workspacePath);
   } catch (err) {
     logger.error("Failed to load template from GCS", {

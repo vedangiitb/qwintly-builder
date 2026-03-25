@@ -20,6 +20,7 @@ export const createTestContext = async (): Promise<TestContext> => {
     snapshotBucket: "test-bucket",
     projectId: "test-project",
     templateBucket: "test-template",
+    genSitesProjectId: "test-gs-id",
   };
 
   return {
