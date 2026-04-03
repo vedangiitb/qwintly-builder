@@ -2,13 +2,13 @@ import "dotenv/config";
 
 /*
  * Job context from Worker
- * SESSION_ID, REQUEST_TYPE & TASKS_PLAN_ID
+ * CHAT_ID, REQUEST_TYPE & TASKS_PLAN_ID
  *
  * Env secrets/variables
  * SNAPSHOT_BUCKET_NAME, GCP_PROJECT_ID_QWINTLY, ,GEMINI_API_KEY
  */
 
-export const SESSION_ID = process.env.SESSION_ID!;
+export const CHAT_ID = process.env.CHAT_ID!;
 export const TASKS_PLAN_ID = process.env.TASKS_PLAN_ID!;
 export const REQUEST_TYPE = process.env.REQUEST_TYPE!;
 export const SNAPSHOT_BUCKET = process.env.SNAPSHOT_BUCKET;

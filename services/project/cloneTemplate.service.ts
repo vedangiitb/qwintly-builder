@@ -10,19 +10,19 @@ import { logger } from "../../utils/logger.js";
 
 export async function cloneTemplate(ctx: JobContext) {
   const workspacePath = ctx.workspace;
-  const sessionId = ctx.sessionId;
+  const chatId = ctx.chatId;
 
   let bucketName: string;
   let zipPath: string;
   let projectId: string = ctx.projectId!;
-  const tmpZipPath = ProjectPathConstants(sessionId).tmpZipPath;
+  const tmpZipPath = ProjectPathConstants(chatId).tmpZipPath;
 
   if (ctx.requestType === ProjectRequestType.NEW) {
     bucketName = ctx.templateBucket!;
     zipPath = ProjectPathConstants("").baseTemplate;
   } else {
     bucketName = ctx.snapshotBucket!;
-    zipPath = ProjectPathConstants(sessionId).snapShotPath;
+    zipPath = ProjectPathConstants(chatId).snapShotPath;
     projectId = ctx.genSitesProjectId!;
   }
   logger.info("Fetching template", {

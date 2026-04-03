@@ -6,6 +6,6 @@ export const fetchProjectContext = async (
   ctx: JobContext,
 ): Promise<CollectedContext> => {
   const contextrepo = new ContextRepository();
-  const context = await contextrepo.fetchCollectedContext(ctx.sessionId);
+  const context = await contextrepo.fetchCollectedContext(ctx.chatId);
   return context;
 };

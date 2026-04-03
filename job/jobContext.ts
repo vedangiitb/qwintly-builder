@@ -2,7 +2,7 @@
 import {
   GCP_PROJECT_ID_QWINTLY,
   REQUEST_TYPE,
-  SESSION_ID,
+  CHAT_ID,
   SNAPSHOT_BUCKET,
   TASKS_PLAN_ID,
   TEMPLATE_BUCKET,
@@ -10,23 +10,23 @@ import {
 
 /*
  * Job context from Worker
- * SESSION_ID, REQUEST_TYPE & TASKS_PLAN_ID
+ * CHAT_ID, REQUEST_TYPE & TASKS_PLAN_ID
  *
  * Env secrets/variables
  * SNAPSHOT_BUCKET, GCP_PROJECT_ID_QWINTLY, TEMPLATE_BUCKET
  */
 
 export function createJobContext() {
-  if (!SESSION_ID || !REQUEST_TYPE) {
+  if (!CHAT_ID || !REQUEST_TYPE) {
     throw new Error("Missing required env vars");
   }
 
   return {
-    sessionId: SESSION_ID,
+    chatId: CHAT_ID,
     requestType: REQUEST_TYPE,
     tasksPlanId: TASKS_PLAN_ID,
     workspace: `/tmp/workspace`,
-    zipPath: `/tmp/${SESSION_ID}.zip`,
+    zipPath: `/tmp/${CHAT_ID}.zip`,
     snapshotBucket: SNAPSHOT_BUCKET,
     projectId: GCP_PROJECT_ID_QWINTLY,
     templateBucket: TEMPLATE_BUCKET,

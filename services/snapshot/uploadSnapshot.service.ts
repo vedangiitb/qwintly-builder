@@ -4,10 +4,10 @@ import { logger } from "../../utils/logger.js";
 
 export async function uploadProjectSnapshot(ctx: JobContext) {
   const zipPath = ctx.zipPath;
-  const sessionId = ctx.sessionId;
+  const chatId = ctx.chatId;
   const bucketName = ctx.snapshotBucket;
   const projectId = ctx.projectId;
-  const destination = `projects/${sessionId}.zip`;
+  const destination = `projects/${chatId}.zip`;
   logger.info("Uploading project snapshot", {
     bucketName,
     destination,

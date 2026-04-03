@@ -1,4 +1,4 @@
-import { REQUEST_TYPE, SESSION_ID, TASKS_PLAN_ID } from "../config/env.js";
+import { REQUEST_TYPE, CHAT_ID, TASKS_PLAN_ID } from "../config/env.js";
 
 type LogLevel = "debug" | "info" | "warn" | "error";
 type LogMeta = Record<string, unknown>;
@@ -14,7 +14,7 @@ const LOG_LEVEL = (process.env.LOG_LEVEL as LogLevel) || "info";
 const CURRENT_LEVEL = LEVELS[LOG_LEVEL] ?? LEVELS.info;
 
 const baseContext = {
-  sessionId: SESSION_ID,
+  chatId: CHAT_ID,
   tasksPlanId: TASKS_PLAN_ID,
   requestType: REQUEST_TYPE,
 };
@@ -82,7 +82,7 @@ export const logger = {
 export function sendLog(msg: string) {
   console.log(
     JSON.stringify({
-      sessionId: SESSION_ID,
+      chatId: CHAT_ID,
       type: "STATUS",
       message: msg,
     })

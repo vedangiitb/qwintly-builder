@@ -12,7 +12,7 @@ type TestContext = {
 export const createTestContext = async (): Promise<TestContext> => {
   const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "qwintly-tools-"));
   const ctx: JobContext = {
-    sessionId: "test-session",
+    chatId: "test-session",
     requestType: "NEW",
     tasksPlanId: "test-plan",
     workspace,
