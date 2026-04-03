@@ -1,35 +1,32 @@
-// job/step.ts
-import { logger, sendLog } from "../utils/logger.js";
-import { JobContext } from "./jobContext.js";
+import { logger } from "../services/logger/logger.service.js";
 import { isStepDone } from "./stepDone.js";
 
 type StepFn<T> = () => Promise<T>;
 
 export async function step<T>(
-  ctx: JobContext,
   name: string,
   fn: StepFn<T>,
-  options?: { retries?: number }
+  options?: { retries?: number },
 ) {
   const retries = options?.retries ?? 0;
 
-  if (await isStepDone(ctx, name)) {
-    logger.info("Skipping step", { step: name });
+  if (await isStepDone(name)) {
+    logger.info(`Skipping step ${name}`);
     return;
   }
 
   for (let attempt = 1; attempt <= retries + 1; attempt++) {
     try {
-      sendLog(`Started ${name}`);
+      logger.status(`Started ${name}`);
       const result = await fn();
-      sendLog(`Done ${name}`);
+      logger.status(`Done ${name}`);
       return result;
     } catch (err: any) {
       if (attempt > retries) {
-        sendLog(`Failed ${name}: ${err?.message || err}`);
+        logger.status(`Failed ${name}: ${err?.message || err}`);
         throw err;
       }
-      sendLog(`Retrying ${name}`);
+      logger.status(`Retrying ${name}`);
     }
   }
   throw new Error("Unreachable");

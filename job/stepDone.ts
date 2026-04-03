@@ -1,8 +1,9 @@
 // job/stepState.ts
 import { createFile, stat } from "../infra/fs/workspace.js";
-import { JobContext } from "./jobContext.js";
+import { getJobContext } from "./jobContext.js";
 
-export async function isStepDone(ctx: JobContext, step: string) {
+export async function isStepDone(step: string) {
+  const ctx = getJobContext();
   try {
     await stat(`${ctx.workspace}/.step.${step}`);
     return true;
@@ -11,6 +12,7 @@ export async function isStepDone(ctx: JobContext, step: string) {
   }
 }
 
-export async function markStepDone(ctx: JobContext, step: string) {
+export async function markStepDone(step: string) {
+  const ctx = getJobContext();
   await createFile(`${ctx.workspace}/.step.${step}`, "done");
 }
