@@ -1,14 +1,13 @@
 import fs from "fs";
 import path from "path";
-import { JobContext } from "../../../job/jobContext.js";
+import { getJobContext } from "../../../job/jobContext.js";
 import {
     PreflightErrorList
 } from "../../../types/preflightError.js";
 import { stripLeadingComments, walk } from "./NextRulesValidator.js";
 
-export const HeuristicValidator = async (
-  ctx: JobContext
-): Promise<PreflightErrorList> => {
+export const HeuristicValidator = async (): Promise<PreflightErrorList> => {
+  const ctx = getJobContext();
   const errors: PreflightErrorList = [];
 
   const appDir = path.join(ctx.workspace, "app");

@@ -1,7 +1,10 @@
+import { getJobContext } from "../../job/jobContext.js";
 import { TaskPlansRepository } from "../../repository/planTasks.repository.js";
 import { PlanTask } from "../../types/updatePlan.types.js";
 
-export async function fetchPlanTasks(planId: string): Promise<PlanTask[]> {
+export async function fetchPlanTasks(): Promise<PlanTask[]> {
+  const ctx = getJobContext();
+  const planId = ctx.tasksPlanId;
   if (!planId) {
     throw new Error("planId is required");
   }

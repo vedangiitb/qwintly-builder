@@ -5,48 +5,50 @@ import {
 import { createFolder, removeFolder } from "../../infra/fs/workspace.js";
 import { extractZip } from "../../infra/fs/zipFolder.js";
 import { downloadToDestinationGCS } from "../../infra/gcs/download.js";
-import { JobContext } from "../../job/jobContext.js";
-import { logger } from "../../utils/logger.js";
+import { getJobContext } from "../../job/jobContext.js";
+import { logger } from "../logger/logger.service.js";
 
-export async function cloneTemplate(ctx: JobContext) {
+export async function cloneTemplate() {
+  const ctx = getJobContext();
   const workspacePath = ctx.workspace;
-  const sessionId = ctx.sessionId;
+  const chatId = ctx.chatId;
 
   let bucketName: string;
   let zipPath: string;
   let projectId: string = ctx.projectId!;
-  const tmpZipPath = ProjectPathConstants(sessionId).tmpZipPath;
+  const tmpZipPath = ProjectPathConstants(chatId).tmpZipPath;
 
   if (ctx.requestType === ProjectRequestType.NEW) {
     bucketName = ctx.templateBucket!;
     zipPath = ProjectPathConstants("").baseTemplate;
   } else {
     bucketName = ctx.snapshotBucket!;
-    zipPath = ProjectPathConstants(sessionId).snapShotPath;
+    zipPath = ProjectPathConstants(chatId).snapShotPath;
     projectId = ctx.genSitesProjectId!;
   }
-  logger.info("Fetching template", {
-    zipPath,
-    bucketName,
-    workspacePath,
-  });
+  logger.info(
+    `Cloning template "${zipPath}" from bucket "${bucketName}" into "${workspacePath}" (projectId="${projectId}")`,
+  );
 
   await createFolder(workspacePath);
 
   try {
-    await downloadToDestinationGCS(tmpZipPath, zipPath, bucketName,projectId);
+    logger.info(`Downloading template zip to "${tmpZipPath}"`);
+    await downloadToDestinationGCS(tmpZipPath, zipPath, bucketName, projectId);
+    logger.info(`Extracting template zip from "${tmpZipPath}" to "${workspacePath}"`);
     await extractZip(tmpZipPath, workspacePath);
   } catch (err) {
-    logger.error("Failed to load template from GCS", {
-      zipPath,
-      bucketName,
-      workspacePath,
-      err,
-    });
-    throw new Error(`Failed to load template from GCS: ${err}`);
+    const errMessage = err instanceof Error ? err.message : String(err);
+    throw new Error(`Failed to load template from GCS: ${errMessage}`);
   } finally {
-    await removeFolder(tmpZipPath);
+    try {
+      await removeFolder(tmpZipPath);
+      logger.info(`Cleaned up temp zip at "${tmpZipPath}"`);
+    } catch (err) {
+      const errMessage = err instanceof Error ? err.message : String(err);
+      logger.warn(`Failed to clean up temp zip at "${tmpZipPath}": ${errMessage}`);
+    }
   }
 
-  logger.info("Template ready", { workspacePath });
+  logger.info(`Template ready at "${workspacePath}"`);
 }

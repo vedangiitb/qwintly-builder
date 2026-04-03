@@ -1,4 +1,4 @@
-import { JobContext } from "../../../job/jobContext.js";
+import { getJobContext } from "../../../job/jobContext.js";
 import { PreflightErrorList } from "../../../types/preflightError.js";
 import fs from "fs";
 import path from "path";
@@ -13,9 +13,8 @@ const BROWSER_API_REGEX = /\b(window|document|localStorage|sessionStorage)\b/;
 // Rule 4: app/api/**/route.ts must export HTTP methods
 // Rule 5: page.tsx / layout.tsx must have a default export
 
-export const NextRulesValidator = async (
-  ctx: JobContext
-): Promise<PreflightErrorList> => {
+export const NextRulesValidator = async (): Promise<PreflightErrorList> => {
+  const ctx = getJobContext();
   const errors: PreflightErrorList = [];
 
   const appDir = path.join(ctx.workspace, "app");

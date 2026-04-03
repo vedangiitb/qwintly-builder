@@ -3,9 +3,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { projectConfigs } from "../../../data/configs.constants.js";
 import { filterDescription, readFile } from "../../../infra/fs/workspace.js";
-import { JobContext } from "../../../job/jobContext.js";
+import { getJobContext, JobContext } from "../../../job/jobContext.js";
 import { ProjectIndex } from "../../../types/index/projectIndex.js";
-// import { FileEntry, TreeEntry } from "../../../types/index/projectStructure.js";
 import { FileEntry, TreeEntry } from "../../../types/index/projectIndex.js";
 
 const TEXT_EXTENSIONS = new Set(
@@ -53,9 +52,8 @@ const getBaseDir = async (workspace: string) => {
   }
 };
 
-export async function buildProjectIndex(
-  ctx: JobContext,
-): Promise<ProjectIndex> {
+export async function buildProjectIndex(): Promise<ProjectIndex> {
+  const ctx = getJobContext();
   const baseDir = await getBaseDir(ctx.workspace);
   const folderTree = await buildFolderTree(ctx.workspace, baseDir);
   const enrichedTree = await enrichTree(ctx, folderTree, baseDir);

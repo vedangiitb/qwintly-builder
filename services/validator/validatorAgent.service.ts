@@ -10,15 +10,15 @@ import { ReadFileSchema } from "../../tools/schemas/readFile.schema.js";
 import { writeCodeSchema } from "../../tools/schemas/writeCode.schema.js";
 import { writeCode } from "../../tools/implementations/writeCodeImpl.js";
 import { FinishTaskSchema } from "../../tools/schemas/finishTask.schema.js";
-import { JobContext } from "../../job/jobContext.js";
-import { logger } from "../../utils/logger.js";
+import { getJobContext } from "../../job/jobContext.js";
+import { logger } from "../logger/logger.service.js";
 
 export const validatorAgent = async (
-  ctx: JobContext,
   errors: PreflightErrorList,
   history: ValidatorAgentHistory,
   codeIndex: CodeIndex
 ): Promise<ValidatorAgentHistory> => {
+  const ctx = getJobContext();
   const MAX_STEPS = 6;
   let steps = 0;
   let newHistory: ValidatorAgentHistory = [...history];
@@ -47,7 +47,7 @@ export const validatorAgent = async (
     }
 
     const { name, args } = response.functionCalls[0];
-    logger.info("Validator agent tool call", { toolName: name, args });
+    logger.info(`Validator agent tool call: ${name}`);
 
     contents.push({
       role: "assistant",
@@ -66,7 +66,7 @@ export const validatorAgent = async (
     // -----------------------------
     if (name === ReadFileSchema.name) {
       const { path } = args as { path: string };
-      logger.info("Validator agent reading file", { path });
+      logger.info(`Validator agent reading file "${path}"`);
       let content: string;
 
       if (readFiles.has(path)) {
@@ -98,16 +98,16 @@ export const validatorAgent = async (
     // WRITE CODE (TERMINAL)
     // -----------------------------
     if (name === writeCodeSchema.name) {
-      logger.info("Validator agent writing code", {
-        path: args?.path?.toString(),
-      });
+      const targetPath = args?.path?.toString();
+      logger.info(`Validator agent writing code to "${targetPath}"`);
       if (!args?.path || !args?.code || !args?.description) {
         throw new Error("Invalid write_code arguments.");
       }
-      logger.debug("Validator agent write code payload", {
-        path: args.path.toString(),
-        codePreview: args.code.toString().slice(0, 500),
-      });
+      logger.info(
+        `Validator agent write description: ${args.description
+          .toString()
+          .slice(0, 500)}`,
+      );
 
       newHistory.push({
         file: args.path.toString(),
