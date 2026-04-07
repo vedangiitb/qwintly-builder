@@ -1,15 +1,15 @@
 import { GenerateContentResponse } from "@google/genai";
 import { aiResponse } from "../../infra/ai/gemini.client.js";
-import { validatorPrompt } from "../../prompts/validatorPrompt.js";
-import { validatorTools } from "../../tools/toolsets/validatorTools.js";
+import { validatorPrompt } from "../../ai/prompts/validatorPrompt.js";
+import { validatorTools } from "../../ai/tools/toolsets/validatorTools.js";
 import { CodeIndex } from "../../types/index/codeIndex.js";
 import { PreflightErrorList } from "../../types/preflightError.js";
 import { ValidatorAgentHistory } from "../../types/validatorAgentHistory.js";
-import { readFileImpl } from "../../tools/implementations/readFileImpl.js";
-import { ReadFileSchema } from "../../tools/schemas/readFile.schema.js";
-import { writeCodeSchema } from "../../tools/schemas/writeCode.schema.js";
-import { writeCode } from "../../tools/implementations/writeCodeImpl.js";
-import { FinishTaskSchema } from "../../tools/schemas/finishTask.schema.js";
+import { readFileImpl } from "../../ai/tools/implementations/readFileImpl.js";
+import { ReadFileSchema } from "../../ai/tools/schemas/readFile.schema.js";
+import { writeCodeSchema } from "../../ai/tools/schemas/writeCode.schema.js";
+import { writeCode } from "../../ai/tools/implementations/writeCodeImpl.js";
+import { FinishTaskSchema } from "../../ai/tools/schemas/finishTask.schema.js";
 import { getJobContext } from "../../job/jobContext.js";
 import { logger } from "../logger/logger.service.js";
 

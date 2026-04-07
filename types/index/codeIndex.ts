@@ -1,9 +1,18 @@
 import { ProjectConfig } from "./projectConfig.js";
-import { ProjectConventions } from "./projectConventions.js";
-import { ProjectIndex } from "./projectIndex.js";
+import {
+  ComponentConventions,
+  ImportConventions,
+  NamingConventions,
+  RoutingConventions,
+  StylingConventions,
+} from "./projectConventions.js";
 
 export interface CodeIndex {
-  projectIndex: ProjectIndex;
+  folderTree: string;
   projectConfig: ProjectConfig;
-  projectConventions: ProjectConventions;
+  routingConventions: RoutingConventions;
+  namingConventions: NamingConventions;
+  componentConventions: ComponentConventions;
+  stylingConventions: StylingConventions;
+  importConventions: ImportConventions;
 }
