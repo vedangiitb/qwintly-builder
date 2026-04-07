@@ -1,7 +1,7 @@
+import { runBuilderAiFlow } from "../ai/graph.js";
 import { ProjectRequestType } from "../data/project.constants.js";
 import { getJobContext } from "../job/jobContext.js";
 import { step } from "../job/step.js";
-import { buildCodeIndex } from "../services/indexer/buildCodeIndex.service.js";
 import { cloneTemplate } from "../services/project/cloneTemplate.service.js";
 import { fetchProjectContext } from "../services/project/fetchProjectContext.js";
 import { fetchPlanTasks } from "../services/project/getRequest.service.js";
@@ -11,40 +11,40 @@ import { uploadProjectSnapshot } from "../services/snapshot/uploadSnapshot.servi
 export async function runProjectFlow() {
   const ctx = getJobContext();
   /*
-   * Clone Project Snapshot/Template
+   * Fetch plan tasks, project context, and clone project Snapshot/Template
    */
-  await step(
-    ctx.requestType === ProjectRequestType.NEW
-      ? "Cloning Template"
-      : "Cloning Project Snapshot",
-    () => cloneTemplate(),
-    {
-      retries: 1,
-    },
-  );
-
-  /*
-   * Fetch plan tasks, project context, and build code index
-   */
-  const [planTasks, collectedContext, codeIndex] = await Promise.all([
+  const [planTasks, collectedContext] = await Promise.all([
     step("Loading Plan Tasks", () => fetchPlanTasks(), {
       retries: 1,
     }),
     step("Fetching Project context", () => fetchProjectContext(), {
       retries: 1,
     }),
-    step("Building Code Index", () => buildCodeIndex(), {
-      retries: 2,
-    }),
+    step(
+      ctx.requestType === ProjectRequestType.NEW
+        ? "Cloning Template"
+        : "Cloning Project Snapshot",
+      () => cloneTemplate(),
+      {
+        retries: 1,
+      },
+    ),
   ]);
 
-  if (!planTasks || !collectedContext || !codeIndex) {
+  if (!planTasks || !collectedContext) {
     throw new Error("Failed to fetch data");
   }
 
   /*
-   * Deep Agent Execution (TODO)
+   * Deep Agent Execution
    */
+  await step(
+    "Running Builder AI Flow",
+    () => runBuilderAiFlow(planTasks, collectedContext),
+    {
+      retries: 0,
+    },
+  );
 
   /*
    * Generate Project Info Index (TODO)
