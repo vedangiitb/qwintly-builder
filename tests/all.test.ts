@@ -1,0 +1,9 @@
+import "./buildFolderTree.test.js";
+import "./tools/fileTools.test.js";
+import "./tools/listDirTool.test.js";
+import "./tools/searchTool.test.js";
+import "./tools/applyPatchTool.test.js";
+import "./tools/writeCodeTool.test.js";
+import "./tools/toolSchemas.test.js";
+import "./ai/builderGraph.test.js";
+import "./ai/toolLoopRunner.test.js";
