@@ -5,6 +5,7 @@ type CleanupFn = () => Promise<void> | void;
 const cleanups: CleanupFn[] = [];
 let shuttingDown = false;
 let shutdownPromise: Promise<void> | null = null;
+let lastSignalAtMs: number | null = null;
 
 export function registerCleanupUtil(fn: CleanupFn) {
   cleanups.push(fn);
@@ -47,23 +48,43 @@ export async function safeExit(code = 0, reason?: string) {
   process.exit(code);
 }
 
+function handleSignal(signal: "SIGINT" | "SIGTERM", code: number) {
+  const now = Date.now();
+  const isSecondSignal =
+    lastSignalAtMs !== null && now - lastSignalAtMs < 1500;
+  lastSignalAtMs = now;
+
+  // Second Ctrl+C (or repeated SIGTERM) => exit immediately.
+  if (shuttingDown || isSecondSignal) {
+    logger.warn(`Received ${signal} again; forcing exit`);
+    process.exit(code);
+    return;
+  }
+
+  logger.warn(`Received ${signal}`);
+
+  // Force-exit fallback in case something keeps the event loop alive.
+  const forceExitTimer = setTimeout(() => {
+    logger.error(`Timed out during ${signal} shutdown; forcing exit`);
+    process.exit(code);
+  }, 6500);
+  forceExitTimer.unref();
+
+  safeExit(code, signal).catch((err) => {
+    logger.error(
+      `${signal} shutdown failed with error ${err.message ? err.message : err}`,
+    );
+    process.exit(code);
+  });
+}
+
 // Register global handlers on import so the process becomes resilient to signals
 process.on("SIGINT", () => {
-  logger.warn("Received SIGINT");
-  shutdown(130, "SIGINT").catch((err) =>
-    logger.error(
-      `SIGINT shutdown failed with error ${err.message ? err.message : err}`,
-    ),
-  );
+  handleSignal("SIGINT", 130);
 });
 
 process.on("SIGTERM", () => {
-  logger.warn("Received SIGTERM");
-  shutdown(143, "SIGTERM").catch((err) =>
-    logger.error(
-      `SIGTERM shutdown failed with error ${err.message ? err.message : err}`,
-    ),
-  );
+  handleSignal("SIGTERM", 143);
 });
 
 process.on("unhandledRejection", (reason) => {
