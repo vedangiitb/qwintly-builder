@@ -7,7 +7,10 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "start:no-llm": "node dist/index.no-llm.js",
-    "test": "node --loader ts-node/esm --test tests/**/*.test.ts"
+    "debug:build": "npm run build && node --inspect-brk --enable-source-maps dist/index.js",
+    "debug:ts": "node --inspect-brk --enable-source-maps --loader ts-node/esm index.ts",
+    "test": "npm run build && node --test dist/tests/all.test.js",
+    "test:ts": "node --loader ts-node/esm --test tests/all.test.ts"
   },
   "repository": {
     "type": "git",
@@ -38,8 +41,9 @@
   "dependencies": {
     "@google-cloud/storage": "^7.18.0",
     "@google/genai": "^1.33.0",
-    "@langchain/core": "^0.3.19",
+    "@langchain/core": "^0.3.80",
     "@langchain/google-genai": "^0.1.11",
+    "@langchain/langgraph": "^1.2.8",
     "@supabase/supabase-js": "^2.99.2",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
