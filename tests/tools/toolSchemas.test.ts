@@ -1,8 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { ApplyPatchSchema } from "../../ai/tools/schemas/applyPatch.schema.js";
-import { CreateFileSchema } from "../../ai/tools/schemas/createFile.schema.js";
-import { DeleteFileSchema } from "../../ai/tools/schemas/deleteFile.schema.js";
 import { ListDirSchema } from "../../ai/tools/schemas/listDir.schema.js";
 import { ReadFileSchema } from "../../ai/tools/schemas/readFile.schema.js";
 import { SearchSchema } from "../../ai/tools/schemas/search.schema.js";
@@ -16,8 +14,6 @@ test("schemas: have names and required parameters", () => {
   const schemas = [
     ReadFileSchema,
     ApplyPatchSchema,
-    CreateFileSchema,
-    DeleteFileSchema,
     SearchSchema,
     ListDirSchema,
     SubmitPlannerTasksSchema,
@@ -49,6 +45,6 @@ test("toolsets: expose the expected schema names", () => {
   const plannerNames = (planner[0].functionDeclarations ?? []).map((d: any) => d.name);
   assert.deepEqual(
     plannerNames.sort(),
-    ["read_file", "create_file", "delete_file", "search", "list_dir", "submit_planner_tasks"].sort(),
+    ["read_file", "search", "list_dir", "submit_planner_tasks"].sort(),
   );
 });

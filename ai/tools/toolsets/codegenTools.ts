@@ -6,7 +6,11 @@ import { SubmitCodegenDoneSchema } from "../schemas/submitCodegenDone.schema.js"
 export const codegenTools = (): Tool[] => {
   return [
     {
-      functionDeclarations: [ReadFileSchema, ApplyPatchSchema, SubmitCodegenDoneSchema],
+      functionDeclarations: [
+        ReadFileSchema,
+        ApplyPatchSchema,
+        SubmitCodegenDoneSchema,
+      ],
     },
   ];
 };

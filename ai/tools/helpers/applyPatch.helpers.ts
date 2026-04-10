@@ -5,6 +5,15 @@ export type ApplyPatchOperation =
       kind: "update";
       filePath: string;
       hunks: PatchHunk[];
+    }
+  | {
+      kind: "add";
+      filePath: string;
+      hunks: PatchHunk[];
+    }
+  | {
+      kind: "delete";
+      filePath: string;
     };
 
 type PatchLine =
@@ -20,26 +29,51 @@ export type PatchHunk = {
 
 const normalizeNewlines = (value: string) => value.replace(/\r\n/g, "\n");
 
+const normalizeLineForLooseMatch = (value: string) =>
+  value
+    .replace(/[ \t]+$/g, "")
+    .replace(/;$/g, "")
+    .replace(/['"]/g, '"');
+
+const normalizeLineForWhitespaceAgnosticMatch = (value: string) =>
+  normalizeLineForLooseMatch(value).trim().replace(/\s+/g, " ");
+
 export function parseApplyPatch(patchString: string): ApplyPatchOperation[] {
   const normalized = normalizeNewlines(patchString ?? "");
   const rawLines = normalized.split("\n");
 
-  if (rawLines.length < 2 || rawLines[0].trim() !== "*** Begin Patch") {
+  let startIndex = 0;
+  while (startIndex < rawLines.length && !rawLines[startIndex].trim()) {
+    startIndex += 1;
+  }
+  if (
+    startIndex >= rawLines.length ||
+    rawLines[startIndex].replace(/^\uFEFF/, "").trim() !== "*** Begin Patch"
+  ) {
     throw new Error('Invalid patch: missing "*** Begin Patch" header.');
   }
 
   let endIndex = -1;
-  for (let idx = rawLines.length - 1; idx >= 0; idx -= 1) {
+  for (let idx = rawLines.length - 1; idx >= startIndex; idx -= 1) {
     if (rawLines[idx].trim() === "*** End Patch") {
       endIndex = idx;
       break;
     }
   }
-  if (endIndex === -1) {
-    throw new Error('Invalid patch: missing "*** End Patch" footer.');
-  }
+  // Be tolerant: some callers omit the footer entirely. In that case, parse until EOF.
+  if (endIndex === -1) endIndex = rawLines.length;
 
-  const lines = rawLines.slice(1, endIndex);
+  // Some callers mistakenly include "*** End Patch" before additional operations.
+  // If there is meaningful content after the last "*** End Patch", treat the footer as missing
+  // and parse until EOF while ignoring any in-body "*** End Patch" lines.
+  const hasFooter = endIndex !== rawLines.length;
+  const hasNonEmptyAfterFooter = hasFooter
+    ? rawLines.slice(endIndex + 1).some((line) => Boolean(line.trim()))
+    : false;
+  const lines =
+    hasFooter && !hasNonEmptyAfterFooter
+      ? rawLines.slice(startIndex + 1, endIndex)
+      : rawLines.slice(startIndex + 1);
   const operations: ApplyPatchOperation[] = [];
 
   const isOpHeader = (line: string) =>
@@ -50,6 +84,10 @@ export function parseApplyPatch(patchString: string): ApplyPatchOperation[] {
   let i = 0;
   while (i < lines.length) {
     const line = lines[i];
+    if (line.trim() === "*** End Patch") {
+      i += 1;
+      continue;
+    }
     if (!line.trim()) {
       i += 1;
       continue;
@@ -59,21 +97,13 @@ export function parseApplyPatch(patchString: string): ApplyPatchOperation[] {
       throw new Error(`Invalid patch: expected file header at line ${i + 2}.`);
     }
 
-    if (line.startsWith("*** Add File:")) {
-      throw new Error(
-        `Invalid patch: Add File operations are not allowed (use create_file tool instead).`,
-      );
-    }
-
-    if (line.startsWith("*** Delete File:")) {
-      throw new Error(
-        `Invalid patch: Delete File operations are not allowed (use delete_file tool instead).`,
-      );
-    }
-
-    if (line.startsWith("*** Update File:")) {
-      const filePath = line.slice("*** Update File:".length).trim();
-      if (!filePath) throw new Error(`Invalid patch: empty Update File path.`);
+    if (line.startsWith("*** Add File:") || line.startsWith("*** Update File:")) {
+      const kind = line.startsWith("*** Add File:") ? "add" : "update";
+      const headerLength = line.startsWith("*** Add File:")
+        ? "*** Add File:".length
+        : "*** Update File:".length;
+      const filePath = line.slice(headerLength).trim();
+      if (!filePath) throw new Error(`Invalid patch: empty ${kind === "add" ? "Add" : "Update"} File path.`);
       i += 1;
 
       if (i < lines.length && lines[i].startsWith("*** Move to:")) {
@@ -95,6 +125,11 @@ export function parseApplyPatch(patchString: string): ApplyPatchOperation[] {
         const current = lines[i];
         if (!currentHunk) currentHunk = { lines: [] };
 
+        if (current.trim() === "*** End Patch") {
+          i += 1;
+          continue;
+        }
+
         if (current === "*** End of File") {
           currentHunk.anchorEOF = true;
           i += 1;
@@ -110,14 +145,27 @@ export function parseApplyPatch(patchString: string): ApplyPatchOperation[] {
         }
 
         if (!current) {
-          // Treat empty line as context line.
-          currentHunk.lines.push({ kind: "context", text: "" });
+          // Empty line: for Add File, treat as an added blank line; for Update, treat as context.
+          currentHunk.lines.push({ kind: kind === "add" ? "add" : "context", text: "" });
           i += 1;
           continue;
         }
 
         const prefix = current[0];
         const text = current.slice(1);
+
+        if (kind === "add") {
+          // For Add File, accept either "+"-prefixed diff lines or raw file contents.
+          // Preserve leading whitespace and leading "-" characters as literal file content.
+          if (prefix === "+") {
+            currentHunk.lines.push({ kind: "add", text });
+          } else {
+            currentHunk.lines.push({ kind: "add", text: current });
+          }
+          i += 1;
+          continue;
+        }
+
         if (prefix === " ") {
           currentHunk.lines.push({ kind: "context", text });
         } else if (prefix === "+") {
@@ -125,16 +173,28 @@ export function parseApplyPatch(patchString: string): ApplyPatchOperation[] {
         } else if (prefix === "-") {
           currentHunk.lines.push({ kind: "delete", text });
         } else {
-          throw new Error(
-            `Invalid patch line (expected ' ', '+', '-' or '@@'): "${current}"`,
-          );
+          // Be lenient for Update File: treat unprefixed lines as context.
+          // This helps when an LLM emits patch hunks without leading " " context markers.
+          currentHunk.lines.push({ kind: "context", text: current });
         }
         i += 1;
       }
 
       pushHunk();
 
-      operations.push({ kind: "update", filePath, hunks });
+      if (kind === "add") {
+        operations.push({ kind: "add", filePath, hunks });
+      } else {
+        operations.push({ kind: "update", filePath, hunks });
+      }
+      continue;
+    }
+
+    if (line.startsWith("*** Delete File:")) {
+      const filePath = line.slice("*** Delete File:".length).trim();
+      if (!filePath) throw new Error(`Invalid patch: empty Delete File path.`);
+      operations.push({ kind: "delete", filePath });
+      i += 1;
       continue;
     }
   }
@@ -169,6 +229,53 @@ const findSubsequence = (
   return -1;
 };
 
+type HunkSearchResult = { pos: number; mode: "strict" | "loose" | "ws" };
+
+const findHunkPosition = (
+  fileLines: string[],
+  expected: string[],
+  cursor: number,
+  requireEnd: boolean,
+): HunkSearchResult => {
+  const strictFromCursor = requireEnd
+    ? findSubsequence(fileLines, expected, 0, true)
+    : findSubsequence(fileLines, expected, cursor, false);
+  if (strictFromCursor !== -1) return { pos: strictFromCursor, mode: "strict" };
+
+  if (!requireEnd) {
+    const strictFromStart = findSubsequence(fileLines, expected, 0, false);
+    if (strictFromStart !== -1) return { pos: strictFromStart, mode: "strict" };
+  }
+
+  const looseFileLines = fileLines.map(normalizeLineForLooseMatch);
+  const looseExpected = expected.map(normalizeLineForLooseMatch);
+
+  const looseFromCursor = requireEnd
+    ? findSubsequence(looseFileLines, looseExpected, 0, true)
+    : findSubsequence(looseFileLines, looseExpected, cursor, false);
+  if (looseFromCursor !== -1) return { pos: looseFromCursor, mode: "loose" };
+
+  if (!requireEnd) {
+    const looseFromStart = findSubsequence(looseFileLines, looseExpected, 0, false);
+    if (looseFromStart !== -1) return { pos: looseFromStart, mode: "loose" };
+  }
+
+  const wsFileLines = fileLines.map(normalizeLineForWhitespaceAgnosticMatch);
+  const wsExpected = expected.map(normalizeLineForWhitespaceAgnosticMatch);
+
+  const wsFromCursor = requireEnd
+    ? findSubsequence(wsFileLines, wsExpected, 0, true)
+    : findSubsequence(wsFileLines, wsExpected, cursor, false);
+  if (wsFromCursor !== -1) return { pos: wsFromCursor, mode: "ws" };
+
+  if (!requireEnd) {
+    const wsFromStart = findSubsequence(wsFileLines, wsExpected, 0, false);
+    if (wsFromStart !== -1) return { pos: wsFromStart, mode: "ws" };
+  }
+
+  return { pos: -1, mode: "strict" };
+};
+
 export function applyHunksToContent(
   content: string,
   hunks: PatchHunk[],
@@ -187,9 +294,7 @@ export function applyHunksToContent(
       .map((l) => l.text);
 
     const requireEnd = Boolean(hunk.anchorEOF);
-    const pos = requireEnd
-      ? findSubsequence(fileLines, expected, 0, true)
-      : findSubsequence(fileLines, expected, cursor, false);
+    const { pos, mode } = findHunkPosition(fileLines, expected, cursor, requireEnd);
 
     if (pos === -1) {
       const preview = expected.slice(0, 3).join("\\n");
@@ -200,10 +305,21 @@ export function applyHunksToContent(
       );
     }
 
+    const linesEqual = (a: string, b: string) => {
+      if (mode === "strict") return a === b;
+      if (mode === "loose") {
+        return normalizeLineForLooseMatch(a) === normalizeLineForLooseMatch(b);
+      }
+      return (
+        normalizeLineForWhitespaceAgnosticMatch(a) ===
+        normalizeLineForWhitespaceAgnosticMatch(b)
+      );
+    };
+
     let idx = pos;
     for (const line of hunk.lines) {
       if (line.kind === "context") {
-        if (fileLines[idx] !== line.text) {
+        if (!linesEqual(fileLines[idx] ?? "", line.text)) {
           throw new Error(
             `Patch context mismatch at line ${idx + 1}: expected "${line.text}"`,
           );
@@ -213,7 +329,7 @@ export function applyHunksToContent(
       }
 
       if (line.kind === "delete") {
-        if (fileLines[idx] !== line.text) {
+        if (!linesEqual(fileLines[idx] ?? "", line.text)) {
           throw new Error(
             `Patch delete mismatch at line ${idx + 1}: expected "${line.text}"`,
           );

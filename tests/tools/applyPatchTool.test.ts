@@ -45,7 +45,7 @@ test("apply_patch: updates an existing text file", async () => {
   }
 });
 
-test("apply_patch: rejects patches that add/delete files or update missing files", async () => {
+test("apply_patch: supports add/delete and updates files", async () => {
   const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "apply-patch-"));
 
   try {
@@ -62,30 +62,323 @@ test("apply_patch: rejects patches that add/delete files or update missing files
       genSitesProjectId: "test",
     });
 
+    // 1. Add File
     const addFilePatch = [
       "*** Begin Patch",
       "*** Add File: new.txt",
+      "@@",
       "+hello",
       "*** End Patch",
       "",
     ].join("\n");
 
     const addRes = await applyPatchImpl(addFilePatch);
-    assert.equal(addRes.success, false);
-    assert.ok((addRes.error ?? "").includes("Add File"));
+    assert.deepEqual(addRes, { success: true });
+    assert.equal(await fs.readFile(path.join(tmpRoot, "new.txt"), "utf-8"), "hello\n");
 
-    const missingUpdate = [
+    // 2. Update existing (already tested, but here too)
+    const updatePatch = [
       "*** Begin Patch",
-      "*** Update File: missing.txt",
+      "*** Update File: new.txt",
       "@@",
-      "+x",
+      "-hello",
+      "+hi",
+      "*** End Patch",
+      "",
+    ].join("\n");
+    await applyPatchImpl(updatePatch);
+    assert.equal(await fs.readFile(path.join(tmpRoot, "new.txt"), "utf-8"), "hi\n");
+
+    // 3. Delete File
+    const deletePatch = [
+      "*** Begin Patch",
+      "*** Delete File: new.txt",
+      "*** End Patch",
+      "",
+    ].join("\n");
+    const delRes = await applyPatchImpl(deletePatch);
+    assert.deepEqual(delRes, { success: true });
+    
+    try {
+      await fs.stat(path.join(tmpRoot, "new.txt"));
+      assert.fail("File should have been deleted");
+    } catch (err) {
+      assert.equal((err as any).code, "ENOENT");
+    }
+
+  } finally {
+    await fs.rm(tmpRoot, { recursive: true, force: true });
+  }
+});
+
+test("apply_patch: tolerates small formatting differences in context", async () => {
+  const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "apply-patch-"));
+
+  try {
+    setJobContext({
+      chatId: "test",
+      sessionId: "test",
+      requestType: "test",
+      tasksPlanId: "test",
+      workspace: tmpRoot,
+      zipPath: path.join(tmpRoot, "tmp.zip"),
+      snapshotBucket: "test",
+      projectId: "test",
+      templateBucket: "test",
+      genSitesProjectId: "test",
+    });
+
+    await fs.writeFile(
+      path.join(tmpRoot, "quotes.ts"),
+      "import Link from 'next/link';\nconst x = 1;\n",
+      "utf-8",
+    );
+
+    const patch = [
+      "*** Begin Patch",
+      "*** Update File: quotes.ts",
+      "@@",
+      '-import Link from "next/link"',
+      '+import Link from "next/navigation";',
+      " const x = 1;",
       "*** End Patch",
       "",
     ].join("\n");
 
-    const missingRes = await applyPatchImpl(missingUpdate);
-    assert.equal(missingRes.success, false);
-    assert.ok((missingRes.error ?? "").includes("not found"));
+    const res = await applyPatchImpl(patch);
+    assert.deepEqual(res, { success: true });
+    assert.equal(
+      await fs.readFile(path.join(tmpRoot, "quotes.ts"), "utf-8"),
+      'import Link from "next/navigation";\nconst x = 1;\n',
+    );
+  } finally {
+    await fs.rm(tmpRoot, { recursive: true, force: true });
+  }
+});
+
+test("apply_patch: tolerates unprefixed lines when adding a file", async () => {
+  const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "apply-patch-"));
+
+  try {
+    setJobContext({
+      chatId: "test",
+      sessionId: "test",
+      requestType: "test",
+      tasksPlanId: "test",
+      workspace: tmpRoot,
+      zipPath: path.join(tmpRoot, "tmp.zip"),
+      snapshotBucket: "test",
+      projectId: "test",
+      templateBucket: "test",
+      genSitesProjectId: "test",
+    });
+
+    const patch = [
+      "*** Begin Patch",
+      "*** Add File: plain.txt",
+      "@@",
+      "hello",
+      "",
+      "world",
+      "*** End Patch",
+      "",
+    ].join("\n");
+
+    const res = await applyPatchImpl(patch);
+    assert.deepEqual(res, { success: true });
+    assert.equal(await fs.readFile(path.join(tmpRoot, "plain.txt"), "utf-8"), "hello\n\nworld\n");
+  } finally {
+    await fs.rm(tmpRoot, { recursive: true, force: true });
+  }
+});
+
+test("apply_patch: preserves leading spaces when adding a file", async () => {
+  const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "apply-patch-"));
+
+  try {
+    setJobContext({
+      chatId: "test",
+      sessionId: "test",
+      requestType: "test",
+      tasksPlanId: "test",
+      workspace: tmpRoot,
+      zipPath: path.join(tmpRoot, "tmp.zip"),
+      snapshotBucket: "test",
+      projectId: "test",
+      templateBucket: "test",
+      genSitesProjectId: "test",
+    });
+
+    const patch = [
+      "*** Begin Patch",
+      "*** Add File: indented.txt",
+      "@@",
+      "  a",
+      "    b",
+      "\t\tc",
+      "*** End Patch",
+      "",
+    ].join("\n");
+
+    const res = await applyPatchImpl(patch);
+    assert.deepEqual(res, { success: true });
+    assert.equal(
+      await fs.readFile(path.join(tmpRoot, "indented.txt"), "utf-8"),
+      "  a\n    b\n\t\tc\n",
+    );
+  } finally {
+    await fs.rm(tmpRoot, { recursive: true, force: true });
+  }
+});
+
+test("apply_patch: tolerates leading newlines before header", async () => {
+  const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "apply-patch-"));
+
+  try {
+    setJobContext({
+      chatId: "test",
+      sessionId: "test",
+      requestType: "test",
+      tasksPlanId: "test",
+      workspace: tmpRoot,
+      zipPath: path.join(tmpRoot, "tmp.zip"),
+      snapshotBucket: "test",
+      projectId: "test",
+      templateBucket: "test",
+      genSitesProjectId: "test",
+    });
+
+    await fs.writeFile(path.join(tmpRoot, "a.txt"), "one\n", "utf-8");
+
+    const patch = [
+      "",
+      "*** Begin Patch",
+      "*** Update File: a.txt",
+      "@@",
+      "-one",
+      "+two",
+      "*** End Patch",
+      "",
+    ].join("\n");
+
+    const res = await applyPatchImpl(patch);
+    assert.deepEqual(res, { success: true });
+    assert.equal(await fs.readFile(path.join(tmpRoot, "a.txt"), "utf-8"), "two\n");
+  } finally {
+    await fs.rm(tmpRoot, { recursive: true, force: true });
+  }
+});
+
+test("apply_patch: tolerates missing footer", async () => {
+  const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "apply-patch-"));
+
+  try {
+    setJobContext({
+      chatId: "test",
+      sessionId: "test",
+      requestType: "test",
+      tasksPlanId: "test",
+      workspace: tmpRoot,
+      zipPath: path.join(tmpRoot, "tmp.zip"),
+      snapshotBucket: "test",
+      projectId: "test",
+      templateBucket: "test",
+      genSitesProjectId: "test",
+    });
+
+    await fs.writeFile(path.join(tmpRoot, "a.txt"), "one\n", "utf-8");
+
+    const patch = [
+      "*** Begin Patch",
+      "*** Update File: a.txt",
+      "@@",
+      "-one",
+      "+two",
+      "",
+    ].join("\n");
+
+    const res = await applyPatchImpl(patch);
+    assert.deepEqual(res, { success: true });
+    assert.equal(await fs.readFile(path.join(tmpRoot, "a.txt"), "utf-8"), "two\n");
+  } finally {
+    await fs.rm(tmpRoot, { recursive: true, force: true });
+  }
+});
+
+test("apply_patch: tolerates unprefixed context lines in updates", async () => {
+  const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "apply-patch-"));
+
+  try {
+    setJobContext({
+      chatId: "test",
+      sessionId: "test",
+      requestType: "test",
+      tasksPlanId: "test",
+      workspace: tmpRoot,
+      zipPath: path.join(tmpRoot, "tmp.zip"),
+      snapshotBucket: "test",
+      projectId: "test",
+      templateBucket: "test",
+      genSitesProjectId: "test",
+    });
+
+    await fs.writeFile(path.join(tmpRoot, "a.txt"), "one\ntwo\n", "utf-8");
+
+    const patch = [
+      "*** Begin Patch",
+      "*** Update File: a.txt",
+      "@@",
+      "one",
+      "-two",
+      "+TWO",
+      "*** End Patch",
+      "",
+    ].join("\n");
+
+    const res = await applyPatchImpl(patch);
+    assert.deepEqual(res, { success: true });
+    assert.equal(await fs.readFile(path.join(tmpRoot, "a.txt"), "utf-8"), "one\nTWO\n");
+  } finally {
+    await fs.rm(tmpRoot, { recursive: true, force: true });
+  }
+});
+
+test("apply_patch: tolerates indentation differences in update context", async () => {
+  const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "apply-patch-"));
+
+  try {
+    setJobContext({
+      chatId: "test",
+      sessionId: "test",
+      requestType: "test",
+      tasksPlanId: "test",
+      workspace: tmpRoot,
+      zipPath: path.join(tmpRoot, "tmp.zip"),
+      snapshotBucket: "test",
+      projectId: "test",
+      templateBucket: "test",
+      genSitesProjectId: "test",
+    });
+
+    await fs.writeFile(path.join(tmpRoot, "a.txt"), "  keep\n  change\n", "utf-8");
+
+    const patch = [
+      "*** Begin Patch",
+      "*** Update File: a.txt",
+      "@@",
+      "        keep",
+      "-        change",
+      "+        changed",
+      "*** End Patch",
+      "",
+    ].join("\n");
+
+    const res = await applyPatchImpl(patch);
+    assert.deepEqual(res, { success: true });
+    assert.equal(
+      await fs.readFile(path.join(tmpRoot, "a.txt"), "utf-8"),
+      "  keep\n        changed\n",
+    );
   } finally {
     await fs.rm(tmpRoot, { recursive: true, force: true });
   }

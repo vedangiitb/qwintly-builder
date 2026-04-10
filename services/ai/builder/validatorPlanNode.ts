@@ -3,8 +3,6 @@ import { FunctionCallingConfigMode } from "@google/genai";
 import { validationNodePrompt } from "../../../ai/prompts/validationPlanNode.prompt.js";
 import { plannerTools } from "../../../ai/tools/toolsets/plannerTools.js";
 import { readFileImpl } from "../../../ai/tools/implementations/readFile.impl.js";
-import { createFileImpl } from "../../../ai/tools/implementations/createFile.impl.js";
-import { deleteFileImpl } from "../../../ai/tools/implementations/deleteFile.impl.js";
 import { searchImpl } from "../../../ai/tools/implementations/search.impl.js";
 import { listDirImpl } from "../../../ai/tools/implementations/listDir.impl.js";
 import { runToolLoop } from "../toolLoopRunner.js";
@@ -32,12 +30,6 @@ export function makeValidatorPlanNode(validatorIndex: ValidatorIndex): BuilderNo
 
           const content = await readFileImpl(path, startLine, endLine);
           return { path, content };
-        },
-        create_file: async (args) => {
-          return await createFileImpl(String(args.path ?? ""));
-        },
-        delete_file: async (args) => {
-          return await deleteFileImpl(String(args.path ?? ""));
         },
         search: async (args) => {
           const results = await searchImpl(String(args.search_query ?? ""));
