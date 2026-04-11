@@ -6,7 +6,9 @@ async function getExistingFile(
   filePath: string,
   project: string = GCP_PROJECT_ID_QWINTLY!,
 ): Promise<File> {
-  const storage = new Storage({ projectId: project });
+  const storage = new Storage({
+    projectId: project,
+  });
   const file = storage.bucket(bucketName).file(filePath);
 
   const [exists] = await file.exists();

@@ -8,27 +8,39 @@ import type { ZodSchema } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { GEMINI_API_KEY } from "../../config/env.js";
 
-if (!GEMINI_API_KEY) {
-  throw new Error("GEMINI_API_KEY is not defined");
-}
+let cachedAi: GoogleGenAI | null = null;
 
-export const ai = new GoogleGenAI({
-  apiKey: GEMINI_API_KEY,
-});
+function getAi(): GoogleGenAI {
+  if (!GEMINI_API_KEY) {
+    throw new Error("GEMINI_API_KEY is not defined");
+  }
+
+  if (!cachedAi) {
+    cachedAi = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+  }
+
+  return cachedAi;
+}
 
 type AIResponseOptions = {
   tools?: Tool[];
   schema?: ZodSchema;
   model?: string;
+  toolCallingMode?: FunctionCallingConfigMode;
 };
 
-const DEFAULT_MODEL = "gemini-2.0-flash";
+const DEFAULT_MODEL = "gemini-2.5-flash-lite";
 
 export async function aiResponse(
-  request: string | string[],
+  request: unknown,
   options: AIResponseOptions = {}
 ) {
-  const { tools, schema, model = DEFAULT_MODEL } = options;
+  const {
+    tools,
+    schema,
+    model = DEFAULT_MODEL,
+    toolCallingMode = FunctionCallingConfigMode.AUTO,
+  } = options;
 
   const config: GenerateContentConfig = {};
 
@@ -37,7 +49,7 @@ export async function aiResponse(
     config.tools = tools;
     config.toolConfig = {
       functionCallingConfig: {
-        mode: FunctionCallingConfigMode.ANY,
+        mode: toolCallingMode,
       },
     };
   }
@@ -49,9 +61,10 @@ export async function aiResponse(
   }
 
   try {
+    const ai = getAi();
     return await ai.models.generateContent({
       model,
-      contents: request,
+      contents: request as any,
       ...(Object.keys(config).length > 0 && { config }),
     });
   } catch (err: any) {
