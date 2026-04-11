@@ -76,6 +76,8 @@ export const projectConventions = {
   folderConventions: {
     "app/": "routes, layouts, metadata, globals.css",
     "components/": "UI sections + shared components",
+    "components/marketing/": "marketing site sections (header/footer/etc.)",
+    "components/marketing/sections/": "home page sections (small, composable)",
     "components/ui/": "shadcn/ui primitives",
     "lib/": "shared config + utilities (cn, site config, etc.)",
     "public/": "static assets",
