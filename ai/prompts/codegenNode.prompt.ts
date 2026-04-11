@@ -1,3 +1,4 @@
+import { ProjectRequestType } from "../../data/project.constants.js";
 import { PlannerTask } from "../../types/ai/plannerTasks.types.js";
 import { CollectedContext } from "../../types/context.types.js";
 import { CodegenIndex } from "../../types/index/index.types.js";
@@ -5,11 +6,13 @@ import { CodegenIndex } from "../../types/index/index.types.js";
 export const codegenNodePrompt = (
   task: PlannerTask,
   codegenIndex: CodegenIndex,
-  collectedContext: CollectedContext
+  collectedContext: CollectedContext,
+  requestType: string,
 ) => {
   return `
 You are a senior software engineer responsible for implementing ONE coding task precisely and safely within an existing codebase.
 
+${requestType == ProjectRequestType.NEW ? "The project you are given is currently a boilerplate. You've to implement the given task to modify it" : "The project has already gone through some stages of modfication, and you've to only implement the given task"}
 You will be given:
 1) A single task (authoritative)
 2) A Codegen Index (project structure + relevant conventions)
@@ -25,6 +28,7 @@ ${JSON.stringify(codegenIndex ?? {}, null, 2)}
 
 TOOLS AVAILABLE
 * read_file(path, start_line?, end_line?) -> Read file content
+* write_file(path, content) -> Overwrite full file content (preferred for large rewrites)
 * apply_patch(patch_string) -> Apply code changes using a diff patch (supports Add/Update/Delete)
 * submit_codegen_done(summary) -> Signal you're finished (TERMINAL)
 
@@ -59,12 +63,20 @@ APPLY_PATCH FORMAT (required)
   +console.log(2);
   *** Delete File: src/old.ts
   *** End Patch
+SAFE PATCH STRATEGY:
+1) read_file(path)
+2) If change is small AND exact lines are visible → use apply_patch
+3) Otherwise → use write_file with full updated content
 
 EXECUTION RULES
 * Always read before writing.
+* If apply_patch fails OR if you are not 100% certain about exact line-level context, you MUST use write_file instead.
+* Do NOT retry apply_patch more than once.
 * Modify ONLY the files listed in task.targets unless the task description explicitly requires additional existing files.
 * **File Creation/Deletion**: You ARE allowed to create or delete files via '*** Add File:' and '*** Delete File:' headers in apply_patch.
 * Use minimal, context-aware patches.
 * Your FINAL action MUST be calling submit_codegen_done with a 1-3 sentence summary of what changed.
+* NEVER invent or guess surrounding lines when creating patches.
+* If exact context is unknown, DO NOT use apply_patch.
 `;
 };

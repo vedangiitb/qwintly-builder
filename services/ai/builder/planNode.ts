@@ -7,14 +7,21 @@ import { searchImpl } from "../../../ai/tools/implementations/search.impl.js";
 import { listDirImpl } from "../../../ai/tools/implementations/listDir.impl.js";
 import { runToolLoop } from "../toolLoopRunner.js";
 import { BuilderNode } from "./createBuilderGraph.js";
-import { parsePlannerTasksJson, parsePlannerTasksUnknown } from "./plannerTaskParser.js";
+import {
+  parsePlannerTasksJson,
+  parsePlannerTasksUnknown,
+} from "./plannerTaskParser.js";
 
-export function makePlanNode(plannerIndex: PlannerIndex): BuilderNode {
+export function makePlanNode(
+  plannerIndex: PlannerIndex,
+  requestType: string,
+): BuilderNode {
   return async (state) => {
     const prompt = planNodePrompt(
       state.planTasks ?? [],
       state.collectedContext,
       plannerIndex,
+      requestType,
     );
 
     const result = await runToolLoop({

@@ -1,3 +1,4 @@
+import { ProjectRequestType } from "../../data/project.constants.js";
 import { CollectedContext } from "../../types/context.types.js";
 import { PlannerIndex } from "../../types/index/index.types.js";
 import { PlanTask } from "../../types/updatePlan.types.js";
@@ -6,10 +7,13 @@ export const planNodePrompt = (
   planTasks: PlanTask[],
   collectedContext: CollectedContext,
   plannerIndex: PlannerIndex,
+  requestType: string,
 ) => {
   return `
 You are a senior software architect. Based on the provided PM plan and code context, generate a detailed technical implementation plan.
 Provide precise, step-by-step instructions for a code-generation agent; ensure tasks are explicit and highly granular.
+${requestType == ProjectRequestType.NEW ? "The project you are given is currently a boilerplate. You've to create tasks to modify it as per given PM Plan" : "The project has already gone through some stages of modfication, and you've to only create tasks to implement latest recommendations from PM"}
+
 ---
 
 ## Objectives

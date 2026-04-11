@@ -9,6 +9,7 @@ import { makePlanNode } from "../services/ai/builder/planNode.js";
 import { makeIterateAndCodeNode } from "../services/ai/builder/iterateAndCodeNode.js";
 import { validationNode } from "../services/ai/builder/validationNode.js";
 import { makeValidatorPlanNode } from "../services/ai/builder/validatorPlanNode.js";
+import { getJobContext } from "../job/jobContext.js";
 
 export const runBuilderAiFlow = async (
   planTasks: PlanTask[],
@@ -19,9 +20,11 @@ export const runBuilderAiFlow = async (
     buildValidatorIndex(),
   ]);
 
+  const ctx = getJobContext();
+
   const graph = createBuilderGraph({
-    plan: makePlanNode(plannerIndex),
-    codegen: makeIterateAndCodeNode(),
+    plan: makePlanNode(plannerIndex, ctx.requestType),
+    codegen: makeIterateAndCodeNode(ctx.requestType),
     validate: validationNode,
     validationPlan: makeValidatorPlanNode(validatorIndex),
   });

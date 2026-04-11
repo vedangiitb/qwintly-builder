@@ -45,6 +45,7 @@ export type RunToolLoopOptions = {
   keepFullTrace?: boolean;
   contextPolicy?: ToolLoopContextPolicy;
   aiCall?: AiCallFn;
+  applyPatchAutoRetryMax?: number;
 };
 
 export async function runToolLoop(
@@ -61,6 +62,7 @@ export async function runToolLoop(
     keepFullTrace = true,
     contextPolicy,
     aiCall = aiResponse as unknown as AiCallFn,
+    applyPatchAutoRetryMax = 0,
   } = options;
 
   const policy: Required<ToolLoopContextPolicy> = {
@@ -69,6 +71,7 @@ export async function runToolLoop(
   };
 
   const toolEvents: ToolEvent[] = [];
+  let applyPatchRetryCount = 0;
 
   const fullTraceContents: any[] = keepFullTrace ? [...initialContents] : [];
   let modelContents: any[] = [...initialContents];
@@ -211,6 +214,52 @@ export async function runToolLoop(
         fullTraceContents.push(responseFull);
       }
       modelContents.push(responseFull);
+
+      if (
+        name === "apply_patch" &&
+        (toolResult as any)?.success === false &&
+        applyPatchAutoRetryMax > 0 &&
+        applyPatchRetryCount < applyPatchAutoRetryMax
+      ) {
+        applyPatchRetryCount += 1;
+
+        const error = String((toolResult as any)?.error ?? "unknown error");
+        const debugFiles = Array.isArray((toolResult as any)?.debug?.files)
+          ? ((toolResult as any).debug.files as Array<{
+              path?: string;
+              head?: string;
+            }>)
+          : [];
+
+        const debugText =
+          debugFiles.length > 0
+            ? `\n\nFILE SNAPSHOTS (for regenerating the patch):\n${debugFiles
+                .slice(0, 3)
+                .map(
+                  (f) =>
+                    `--- ${String(f.path ?? "")} ---\n${String(
+                      f.head ?? "",
+                    )}\n--- end ---`,
+                )
+                .join("\n\n")}`
+            : "";
+
+        const retryInstruction = {
+          role: "user",
+          parts: [
+            {
+              text:
+                `apply_patch failed (attempt ${applyPatchRetryCount}/${applyPatchAutoRetryMax}): ${error}\n` +
+                `Regenerate a patch that matches the current file contents. ` +
+                `For large rewrites, prefer write_file(path, content) or Delete+Add instead of Update.` +
+                debugText,
+            },
+          ],
+        };
+
+        if (keepFullTrace) fullTraceContents.push(retryInstruction);
+        modelContents.push(retryInstruction);
+      }
 
       // Deterministic event summaries for compact "memory".
       try {

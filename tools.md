@@ -1,26 +1,36 @@
 ## AI Tools
 
-### 1. Read File (read_file)
-Description: Returns file content for a given a path from starting line to ending line. 
-Inputs: (path,start,end)
-path:Absolute path of the file; start: Starting line(Default 0); ending line(Default -1)
-Output: (content)
-Available to: Planner Agent, Codegen agent, Validation planning agent
-Impl Details: Use existing filesystem tools in fs/workspace.ts create new tools there if needed. Use workspace from jobContext as the place to be the place from where you would be reading the file. Pls have a fallback as well - if file not found -> Return not found
+This document reflects the **current tool schemas and how they are used** in the builder (planner/codegen loops).
 
-### 2. Apply Patch (apply_patch)
-Description: Applies patch to a file or multiple files. Supports Add, Update, and Delete operations.
-Inputs: (patch_string)
-patch_string: patch_string
-Output: (success:true/false)
-Available to: Codegen agent
-Impl Details: Works exactly like codex apply_patch. 
-Supports:
-- *** Add File: <path>
-- *** Update File: <path>
-- *** Delete File: <path>
+### 1) Read File (`read_file`)
+- **Description:** Read a text file (optionally a 1-based line range).
+- **Inputs:** `path` (required), `start_line` (optional), `end_line` (optional)
+- **Output (typical):** `{ path, content }` or `"not found"` if missing
+- **Available to:** planner, codegen, validation planning
+- **Notes:** If `end_line` is omitted, the tool-loop will cap reads to ~200 lines.
 
-For example:
+### 2) Write File (`write_file`)
+- **Description:** Overwrite a file with full content (creates parent folders if needed).
+- **Inputs:** `path` (required), `content` (required)
+- **Output:** `{ ok: true }`
+- **Available to:** codegen
+- **When to use:** Large rewrites or repeated `apply_patch` context mismatches.
+
+### 3) Apply Patch (`apply_patch`)
+- **Description:** Apply a patch across one or more files (add/update/delete).
+- **Inputs:** `patch_string` (required)
+- **Output:** `{ success: true }` or `{ success: false, error }`
+- **Available to:** codegen
+- **Supported operations:**
+  - `*** Add File: <path>`
+  - `*** Update File: <path>`
+  - `*** Delete File: <path>`
+- **Important rules / gotchas:**
+  - `*** Update File:` must include actual `+`/`-` changes (not just a pasted file).
+  - For full-file replacements, prefer **Delete+Add** or use `write_file`.
+
+Example patch:
+```text
 *** Begin Patch
 *** Add File: newfile.ts
 @@
@@ -31,19 +41,36 @@ For example:
 +const y = 2;
 *** Delete File: oldfile.ts
 *** End Patch
-Use workspace from jobContext & Use existing filesystem tools in fs/workspace.ts create new tools there if needed. Handle failure by returning specific error messags
+```
 
+### 4) Search (`search`)
+- **Description:** Search the codebase using ripgrep (`rg`).
+- **Inputs:** `search_query` (required)
+- **Output (typical):** `{ results }` where each result includes file/line/content
+- **Available to:** planner, validation planning
 
-### 3. Search (search)
-Description: rg search
-Inputs: (search_query)
-Outputs: ({path,content}[]) (List of path and content (Content is 1 line), max 20)
-Available to: Planner Agent, Validation planning agent
-Impl Details: Uses rg search. Use workspace from jobContext. Works exactly like codex search.
+### 5) List Directory (`list_dir`)
+- **Description:** List a directory structure up to a bounded depth.
+- **Inputs:** `path` (required), `depth` (required, 1–3)
+- **Output (typical):** `{ content }`
+- **Available to:** planner, validation planning
 
-### 4. List directory (list_dir)
-Description: Lists directory/Folder structure for a given path
-Inputs: (path,depth) 
-path:lute path of the file, depth: max 3
-Available to: Planner Agent, Validation planning agent
-Impl Details: list directory to a certain depth for folders from jobContext. If the folder doesn't exist - return a suitable error message
+### 6) Submit Planner Tasks (`submit_planner_tasks`)
+- **Description:** Finalize planner output (ends planning phase).
+- **Inputs:** `planner_tasks` (required array of `{ description, targets }`)
+- **Output (typical):** `{ success: true, count }`
+- **Available to:** planner
+
+### 7) Submit Codegen Done (`submit_codegen_done`)
+- **Description:** Finalize codegen output (ends codegen phase).
+- **Inputs:** `summary` (required string)
+- **Output (typical):** `{ success: true, summary }`
+- **Available to:** codegen
+
+### Toolset summary
+- **Planner toolset:** `read_file`, `search`, `list_dir`, `submit_planner_tasks`
+- **Codegen toolset:** `read_file`, `apply_patch`, `write_file`, `submit_codegen_done`
+
+### Codegen loop behavior (Codex-like)
+- The codegen loop injects a snapshot (first ~200 lines) of each `task.targets` file into the prompt.
+- If `apply_patch` fails, the loop will auto-retry up to **2** times with file snapshots and a hint to use `write_file` or Delete+Add.

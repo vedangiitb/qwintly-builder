@@ -7,6 +7,7 @@ import { SearchSchema } from "../../ai/tools/schemas/search.schema.js";
 import { SubmitPlannerTasksSchema } from "../../ai/tools/schemas/submitPlannerTasks.schema.js";
 import { writeCodeSchema } from "../../ai/tools/schemas/writeCode.schema.js";
 import { SubmitCodegenDoneSchema } from "../../ai/tools/schemas/submitCodegenDone.schema.js";
+import { WriteFileSchema } from "../../ai/tools/schemas/writeFile.schema.js";
 import { codegenTools } from "../../ai/tools/toolsets/codegenTools.js";
 import { plannerTools } from "../../ai/tools/toolsets/plannerTools.js";
 
@@ -18,6 +19,7 @@ test("schemas: have names and required parameters", () => {
     ListDirSchema,
     SubmitPlannerTasksSchema,
     writeCodeSchema,
+    WriteFileSchema,
     SubmitCodegenDoneSchema,
   ] as const;
 
@@ -37,7 +39,7 @@ test("toolsets: expose the expected schema names", () => {
   const codegenNames = (codegen[0].functionDeclarations ?? []).map((d: any) => d.name);
   assert.deepEqual(
     codegenNames.sort(),
-    ["apply_patch", "read_file", "submit_codegen_done"].sort(),
+    ["apply_patch", "read_file", "write_file", "submit_codegen_done"].sort(),
   );
 
   const planner = plannerTools();
