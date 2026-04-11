@@ -14,6 +14,20 @@ export async function applyPatchImpl(patchString: string) {
     const operations = parseApplyPatch(patchString);
 
     for (const op of operations) {
+      if (op.kind !== "update") continue;
+      const hasAnyChanges = op.hunks.some((hunk) =>
+        hunk.lines.some((line) => line.kind === "add" || line.kind === "delete"),
+      );
+      if (!hasAnyChanges) {
+        throw new Error(
+          `Invalid patch for "${op.filePath}": Update File contains no "+" or "-" lines, so nothing can be applied. ` +
+            `If you intend to replace the entire file, use "*** Delete File:" followed by "*** Add File:" with the full contents. ` +
+            `If you intend to edit in-place, prefix added lines with "+" and removed lines with "-".`,
+        );
+      }
+    }
+
+    for (const op of operations) {
       if (!isTextFilePath(op.filePath)) {
         throw new Error(
           `Binary or unsupported file type in patch: "${op.filePath}"`,

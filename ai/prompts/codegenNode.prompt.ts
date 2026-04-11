@@ -40,6 +40,14 @@ APPLY_PATCH FORMAT (required)
   - " " for unchanged context
   - "-" for removed lines
   - "+" for added lines
+* IMPORTANT: Do NOT paste a full file under "*** Update File:" without "+" / "-" prefixes; unprefixed lines are treated as context and will fail unless the file already matches.
+* If you want to replace an entire file, prefer Delete+Add:
+  *** Begin Patch
+  *** Delete File: app/page.tsx
+  *** Add File: app/page.tsx
+  @@
+  +<entire file contents...>
+  *** End Patch
 * Example (multi-operation):
   *** Begin Patch
   *** Add File: src/new.ts
