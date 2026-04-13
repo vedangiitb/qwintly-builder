@@ -1,16 +1,25 @@
-import { codegenNodePrompt } from "../../../ai/prompts/codegenNode.prompt.js";
-import { applyPatchImpl } from "../../../ai/tools/implementations/applyPatch.impl.js";
-import { readFileImpl } from "../../../ai/tools/implementations/readFile.impl.js";
-import { writeFileImpl } from "../../../ai/tools/implementations/writeFile.impl.js";
-import { codegenTools } from "../../../ai/tools/toolsets/codegenTools.js";
+import { ProjectRequestType } from "../../../data/project.constants.js";
+import {
+  codegenNodePrompt,
+  codegenTools,
+  createWorkspaceToolImpls,
+  runToolLoop,
+} from "qwintly-ai-core";
 import { buildCodegenIndex } from "../../indexer/codegenIndex.js";
-import { runToolLoop } from "../toolLoopRunner.js";
 import { BuilderNode } from "./createBuilderGraph.js";
+import { aiResponse } from "../../../infra/ai/gemini.client.js";
+import { createAiCoreWorkspaceDeps } from "../helpers/aiCoreDeps.js";
 
 export function makeIterateAndCodeNode(requestType: string): BuilderNode {
   return async (state) => {
     const iteration = (state.iteration ?? 0) + 1;
     const history = [...(state.validationFixHistory ?? [])];
+
+    const deps = createAiCoreWorkspaceDeps();
+    const { readFileImpl, writeFileImpl, applyPatchImpl } =
+      createWorkspaceToolImpls(deps);
+
+    const isNewProject = requestType === ProjectRequestType.NEW;
 
     for (const task of state.plannerTasks ?? []) {
       const codegenIndex = await buildCodegenIndex();
@@ -41,15 +50,20 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
           : "";
 
       const prompt = codegenNodePrompt(
-        task,
-        codegenIndex,
-        state.collectedContext,
-        requestType,
+        {
+          task,
+          codegenIndex,
+          collectedContext: state.collectedContext,
+          isNewProject,
+          requestTypeLabel: requestType,
+        },
       ).concat(snapshotBlock);
 
       await runToolLoop({
         initialContents: [{ role: "user", parts: [{ text: prompt }] }],
         tools: codegenTools(),
+        aiCall: aiResponse as any,
+        logger: deps.logger,
         handlers: {
           read_file: async (args) => {
             const path = String(args.path ?? "");

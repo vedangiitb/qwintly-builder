@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { runToolLoop } from "../../services/ai/toolLoopRunner.js";
+import { runToolLoop } from "qwintly-ai-core";
 
 test("tool loop: redacts apply_patch.patch_string from model contents", async () => {
   const requests: unknown[] = [];
@@ -123,4 +123,3 @@ test("tool loop: caps read_file when end_line is omitted", async () => {
   assert.equal(JSON.stringify(requests[1]).includes('"end_line":200'), true);
   assert.equal(JSON.stringify(requests[1]).includes('"truncated":true'), true);
 });
-

@@ -1,25 +1,34 @@
 import { ValidatorIndex } from "../../../types/index/index.types.js";
 import { FunctionCallingConfigMode } from "@google/genai";
-import { validationNodePrompt } from "../../../ai/prompts/validationPlanNode.prompt.js";
-import { plannerTools } from "../../../ai/tools/toolsets/plannerTools.js";
-import { readFileImpl } from "../../../ai/tools/implementations/readFile.impl.js";
-import { searchImpl } from "../../../ai/tools/implementations/search.impl.js";
-import { listDirImpl } from "../../../ai/tools/implementations/listDir.impl.js";
-import { runToolLoop } from "../toolLoopRunner.js";
+import {
+  createWorkspaceToolImpls,
+  plannerTools,
+  runToolLoop,
+  validationNodePrompt,
+} from "qwintly-ai-core";
 import { BuilderNode } from "./createBuilderGraph.js";
 import { parsePlannerTasksJson, parsePlannerTasksUnknown } from "./plannerTaskParser.js";
+import { aiResponse } from "../../../infra/ai/gemini.client.js";
+import { createAiCoreWorkspaceDeps } from "../helpers/aiCoreDeps.js";
 
 export function makeValidatorPlanNode(validatorIndex: ValidatorIndex): BuilderNode {
   return async (state) => {
-    const prompt = validationNodePrompt(
-      state.validationErrors ?? [],
-      state.validationFixHistory ?? [],
+    const prompt = validationNodePrompt({
+      errors: state.validationErrors ?? [],
+      history: state.validationFixHistory ?? [],
       validatorIndex,
+    });
+
+    const deps = createAiCoreWorkspaceDeps();
+    const { readFileImpl, searchImpl, listDirImpl } = createWorkspaceToolImpls(
+      deps,
     );
 
     const result = await runToolLoop({
       initialContents: [{ role: "user", parts: [{ text: prompt }] }],
       tools: plannerTools(),
+      aiCall: aiResponse as any,
+      logger: deps.logger,
       handlers: {
         read_file: async (args) => {
           const path = String(args.path ?? "");

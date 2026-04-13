@@ -3,25 +3,44 @@ import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { setJobContext } from "../../job/jobContext.js";
-import { readFileImpl } from "../../ai/tools/implementations/readFile.impl.js";
+import { createWorkspaceToolImpls } from "qwintly-ai-core";
+
+const createTestDeps = (workspaceRoot: string) => {
+  const sortDirents = (a: any, b: any) => {
+    const aIsDir = a.isDirectory();
+    const bIsDir = b.isDirectory();
+    if (aIsDir !== bIsDir) return aIsDir ? -1 : 1;
+    return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+  };
+
+  return {
+    workspaceRoot,
+    fs: {
+      readFile: async (p: string) => await fs.readFile(p, "utf-8"),
+      writeFile: async (p: string, content: string) =>
+        await fs.writeFile(p, content, "utf-8"),
+      mkdirp: async (dir: string) => {
+        await fs.mkdir(dir, { recursive: true });
+      },
+      rmFile: async (p: string) => await fs.rm(p, { force: true }),
+      stat: async (p: string) => await fs.stat(p),
+      safeReadDir: async (dir: string) => {
+        try {
+          const entries = await fs.readdir(dir, { withFileTypes: true });
+          return entries.sort(sortDirents);
+        } catch {
+          return [];
+        }
+      },
+    },
+  };
+};
 
 test("file tools: read, create, delete within workspace", async () => {
   const tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), "tool-workspace-"));
 
   try {
-    setJobContext({
-      chatId: "test",
-      sessionId: "test",
-      requestType: "test",
-      tasksPlanId: "test",
-      workspace: tmpRoot,
-      zipPath: path.join(tmpRoot, "tmp.zip"),
-      snapshotBucket: "test",
-      projectId: "test",
-      templateBucket: "test",
-      genSitesProjectId: "test",
-    });
+    const { readFileImpl } = createWorkspaceToolImpls(createTestDeps(tmpRoot));
 
     const fileName = "notes.txt";
     const fullPath = path.join(tmpRoot, fileName);

@@ -1,11 +1,15 @@
-import { PlannerIndex } from "../../../types/index/index.types.js";
 import { FunctionCallingConfigMode } from "@google/genai";
-import { planNodePrompt } from "../../../ai/prompts/planNodePrompt.js";
-import { plannerTools } from "../../../ai/tools/toolsets/plannerTools.js";
-import { readFileImpl } from "../../../ai/tools/implementations/readFile.impl.js";
-import { searchImpl } from "../../../ai/tools/implementations/search.impl.js";
-import { listDirImpl } from "../../../ai/tools/implementations/listDir.impl.js";
-import { runToolLoop } from "../toolLoopRunner.js";
+import {
+  createWorkspaceToolImpls,
+  plannerTools,
+  planNodePrompt,
+  runToolLoop,
+} from "qwintly-ai-core";
+import { ProjectRequestType } from "../../../data/project.constants.js";
+import { aiResponse } from "../../../infra/ai/gemini.client.js";
+import { PlannerIndex } from "../../../types/index/index.types.js";
+import { logger } from "../../logger/logger.service.js";
+import { createAiCoreWorkspaceDeps } from "../helpers/aiCoreDeps.js";
 import { BuilderNode } from "./createBuilderGraph.js";
 import {
   parsePlannerTasksJson,
@@ -17,16 +21,24 @@ export function makePlanNode(
   requestType: string,
 ): BuilderNode {
   return async (state) => {
-    const prompt = planNodePrompt(
-      state.planTasks ?? [],
-      state.collectedContext,
+    const isNewProject = requestType === ProjectRequestType.NEW;
+    const prompt = planNodePrompt({
+      planTasks: state.planTasks ?? [],
+      collectedContext: state.collectedContext,
       plannerIndex,
-      requestType,
-    );
+      isNewProject,
+      requestTypeLabel: requestType,
+    });
+
+    const deps = createAiCoreWorkspaceDeps();
+    const { readFileImpl, searchImpl, listDirImpl } =
+      createWorkspaceToolImpls(deps);
 
     const result = await runToolLoop({
       initialContents: [{ role: "user", parts: [{ text: prompt }] }],
       tools: plannerTools(),
+      aiCall: aiResponse as any,
+      logger: deps.logger,
       handlers: {
         read_file: async (args) => {
           const path = String(args.path ?? "");
@@ -63,6 +75,8 @@ export function makePlanNode(
       result.terminalCall?.name === "submit_planner_tasks"
         ? parsePlannerTasksUnknown(result.terminalCall.args.planner_tasks)
         : parsePlannerTasksJson(result.finalText);
+
+    logger.info(`plannerTasks ${plannerTasks}`);
     return { plannerTasks };
   };
 }
