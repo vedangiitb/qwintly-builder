@@ -1,14 +1,14 @@
-import { ProjectRequestType } from "../../../data/project.constants.js";
 import {
-  codegenNodePrompt,
   codegenTools,
   createWorkspaceToolImpls,
   runToolLoop,
 } from "qwintly-ai-core";
-import { buildCodegenIndex } from "../../indexer/codegenIndex.js";
-import { BuilderNode } from "./createBuilderGraph.js";
+import { ProjectRequestType } from "../../../data/project.constants.js";
 import { aiResponse } from "../../../infra/ai/gemini.client.js";
+import { buildCodegenIndex } from "../../indexer/codegenIndex.js";
 import { createAiCoreWorkspaceDeps } from "../helpers/aiCoreDeps.js";
+import { codegenNodePrompt } from "../prompts/codegenNodePrompt.js";
+import { BuilderNode } from "./createBuilderGraph.js";
 
 export function makeIterateAndCodeNode(requestType: string): BuilderNode {
   return async (state) => {
@@ -49,15 +49,13 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
               .join("\n")}`
           : "";
 
-      const prompt = codegenNodePrompt(
-        {
-          task,
-          codegenIndex,
-          collectedContext: state.collectedContext,
-          isNewProject,
-          requestTypeLabel: requestType,
-        },
-      ).concat(snapshotBlock);
+      const prompt = codegenNodePrompt({
+        task,
+        codegenIndex,
+        collectedContext: state.collectedContext,
+        isNewProject,
+        requestTypeLabel: requestType,
+      }).concat(snapshotBlock);
 
       await runToolLoop({
         initialContents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -106,7 +104,8 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
                 const head = await readFileImpl(filePath, 1, 200);
                 debugFiles.push({ path: filePath, head });
               } catch (err) {
-                const message = err instanceof Error ? err.message : String(err);
+                const message =
+                  err instanceof Error ? err.message : String(err);
                 debugFiles.push({
                   path: filePath,
                   head: `read_file failed: ${message}`,

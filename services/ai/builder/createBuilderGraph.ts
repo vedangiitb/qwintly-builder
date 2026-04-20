@@ -1,5 +1,5 @@
 import { END, START, StateGraph } from "@langchain/langgraph";
-import { AgentState, AgentStateAnnotation } from "../../../ai/state.js";
+import { AgentState, AgentStateAnnotation } from "../state.js";
 
 export type BuilderNode = (
   state: AgentState,

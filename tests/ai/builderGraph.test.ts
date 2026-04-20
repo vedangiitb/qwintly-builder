@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createBuilderGraph } from "../../services/ai/builder/createBuilderGraph.js";
-import { AgentState } from "../../ai/state.js";
+import { AgentState } from "../../services/ai/state.js";
 
 test("builder graph: repairs once then ends when validation passes", async () => {
   let validateCalls = 0;

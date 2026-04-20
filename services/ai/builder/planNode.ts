@@ -2,7 +2,6 @@ import { FunctionCallingConfigMode } from "@google/genai";
 import {
   createWorkspaceToolImpls,
   plannerTools,
-  planNodePrompt,
   runToolLoop,
 } from "qwintly-ai-core";
 import { ProjectRequestType } from "../../../data/project.constants.js";
@@ -10,6 +9,7 @@ import { aiResponse } from "../../../infra/ai/gemini.client.js";
 import { PlannerIndex } from "../../../types/index/index.types.js";
 import { logger } from "../../logger/logger.service.js";
 import { createAiCoreWorkspaceDeps } from "../helpers/aiCoreDeps.js";
+import { planNodePrompt } from "../prompts/planNodePrompt.js";
 import { BuilderNode } from "./createBuilderGraph.js";
 import {
   parsePlannerTasksJson,

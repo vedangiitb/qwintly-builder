@@ -1,4 +1,4 @@
-import { runBuilderAiFlow } from "../ai/graph.js";
+import { runBuilderAiFlow } from "../services/ai/graph.js";
 import { ProjectRequestType } from "../data/project.constants.js";
 import { getJobContext } from "../job/jobContext.js";
 import { step } from "../job/step.js";
