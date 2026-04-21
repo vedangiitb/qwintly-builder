@@ -3,19 +3,139 @@ export type PlanNodePromptParams = {
   collectedContext: unknown;
   plannerIndex: unknown;
   isNewProject: boolean;
-  requestTypeLabel: string;
 };
 
 export const planNodePrompt = (params: PlanNodePromptParams) => {
-  const { planTasks, collectedContext, plannerIndex, isNewProject, requestTypeLabel } =
-    params;
+  const { planTasks, collectedContext, plannerIndex, isNewProject } = params;
 
   return `
 You are a senior software architect. Based on the provided PM plan and code context, generate a detailed technical implementation plan.
 Provide precise, step-by-step instructions for a code-generation agent; ensure tasks are explicit and highly granular.
 ${isNewProject ? "The project you are given is currently a boilerplate project that contains some existing code. You've to create tasks to modify it as per given PM Plan. Please make sure that there are no traces of the boilerplate in the final project." : "The project has already gone through some stages of modfication, and you've to only create tasks to implement latest recommendations from PM"}
 
-Request type (label): ${requestTypeLabel}
+---
+
+## UI Architecture Constraint (CRITICAL)
+
+This project uses a **route-level config-driven UI system**. You MUST strictly follow this:
+
+### Core Pattern (STRICT)
+For EVERY route:
+
+- Route folder: \`app/<route>/\`
+- Must contain:
+  - \`page.tsx\`
+  - \`page.config.ts\`
+
+### Responsibilities
+- \`page.config.ts\` → defines UI (structured data)
+- \`page.tsx\` → renders config ONLY
+
+NO JSX-based UI in page files.
+
+---
+
+## CONFIG SCHEMA (STRICT — DO NOT DEVIATE)
+Each page.config.ts MUST export:
+export const config = {
+  elements: Element[]
+}
+
+---
+### Element Types (ONLY THESE)
+1. TEXT
+{
+  id: string,
+  type: "text",
+  text: string
+}
+
+2. CONTAINER
+{
+  id: string,
+  type: "container",
+  children: Element[]
+}
+
+### File Responsibilities
+- \`page.config.ts\` → UI definition
+- \`page.tsx\` → rendering logic ONLY
+
+---
+## ⚠️ CONTENT REQUIREMENTS (CRITICAL)
+
+- Every page MUST render visible content immediately.
+- You MUST include at least one "text" element with non-empty text.
+- DO NOT create empty containers.
+- DO NOT create placeholder sections (hero, features, pricing, etc.).
+- Containers MUST contain meaningful children.
+
+---
+
+## ❌ INVALID STRUCTURES (DO NOT GENERATE)
+{
+  type: "container",
+  children: []
+}
+OR
+containers with only empty children
+OR
+multiple containers with no text elements
+---
+
+## MINIMUM VALID OUTPUT
+Container must have at least one text element:
+{
+  elements: [
+    {
+      id: "root",
+      type: "container",
+      children: [
+        {
+          id: "text-1",
+          type: "text",
+          text: "Some visible content"
+        }
+      ]
+    }
+  ]
+}
+
+---
+
+## PLANNING RULE
+Always prioritize:
+1. Visible UI
+2. Simplicity
+3. Minimal structure
+
+DO NOT scaffold future sections.
+DO NOT create unnecessary placeholders.
+---
+
+### INVALID (DO NOT DO)
+❌ type: "Text" (wrong casing)
+❌ using props: { text: "Hello" }
+❌ adding className or style
+❌ adding unknown fields
+❌ JSX inside config
+
+
+## Hard Constraints
+- DO NOT introduce complex abstractions (registry, schema, DSL layers)
+- DO NOT hardcode UI in \`page.tsx\`
+- DO NOT modify shadcn components in \`components/ui\`
+- DO NOT add unnecessary libraries
+
+## Planning Guidelines
+When tasks involve UI:
+- ALWAYS:
+  - Create or update \`app/<route>/page.config.ts\`
+  - Ensure \`app/<route>/page.tsx\` renders config
+- If route does NOT exist:
+  - Create new folder under \`app/\`
+- If route exists:
+  - Modify existing config incrementally
 
 ---
 
@@ -74,11 +194,10 @@ Tool-use guidance (Save Tokens):
 ---
 
 ## Task Requirements
-
 Each task MUST be atomic and unambiguous.
-- **SPECIFICITY**: Include exact file paths, component names, and logic details.
-- **DETERMINISM**: Avoid phrases like "if necessary" or "explore X". Give direct commands.
-- **CONTEXT**: Include enough context (props, styles, logic) so Codegen doesn't guess.
+- Include exact file paths
+- Include exact structure to implement
+- Avoid ambiguity
 
 ---
 
@@ -99,7 +218,6 @@ When you are done planning, you MUST call submit_planner_tasks with:
 
 ## Planning Rules
 
-* Prefer modifying existing files over creating new ones.
 * Explicitly tell Codegen to create new files if needed.
 * Do NOT duplicate components.
 * Maintain consistency with existing code style.
@@ -116,22 +234,21 @@ When you are done planning, you MUST call submit_planner_tasks with:
 
 ---
 
-## Examples (Concise & Direct)
-
-[
+## EXAMPLES
+NEW ROUTE:
 {
-"description": "Create src/components/Button.tsx: a React component with variants 'primary' and 'secondary' using Tailwind. Use it in src/app/login/page.tsx to replace current native buttons.",
-"targets": ["src/components/Button.tsx", "src/app/login/page.tsx"]
-},
-{
-"description": "Update src/utils/auth.ts to include a 'validateToken' function. Use this in src/middleware.ts to protect /dashboard routes.",
-"targets": ["src/utils/auth.ts", "src/middleware.ts"]
+"description": "Create app/about/page.config.ts with one container and one text element ('About page'). Create app/about/page.tsx to render config using recursive renderer.",
+"targets": ["app/about/page.config.ts", "app/about/page.tsx"]
 }
-]
 
+UPDATE ROUTE:
+{
+"description": "Update app/page.config.ts by adding a second text element inside existing container. Do not modify renderer.",
+"targets": ["app/page.config.ts"]
+}
 ---
+
 
 Focus on clarity, minimalism, and correctness.
 Your plan will directly determine the success of the system.`;
 };
-

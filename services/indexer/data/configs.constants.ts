@@ -75,9 +75,9 @@ export const projectConventions = {
   },
   folderConventions: {
     "app/": "routes, layouts, metadata, globals.css",
+    "app/{route}/":
+      "Each route defines UI via page.config.ts and renders via page.tsx (no JSX UI in page.tsx).",
     "components/": "UI sections + shared components",
-    "components/marketing/": "marketing site sections (header/footer/etc.)",
-    "components/marketing/sections/": "home page sections (small, composable)",
     "components/ui/": "shadcn/ui primitives",
     "lib/": "shared config + utilities (cn, site config, etc.)",
     "public/": "static assets",
@@ -91,13 +91,14 @@ export const projectConventions = {
   },
   routingConventions: {
     required: [
-      "app/page.tsx",
       "app/layout.tsx",
+      "app/page.tsx",
+      "app/page.config.ts",
       "app/not-found.tsx",
       "app/globals.css",
     ],
+    requiredPerRoute: ["app/{route}/page.tsx", "app/{route}/page.config.ts"],
     optionalPerRoute: [
-      "app/{route}/page.tsx",
       "app/{route}/layout.tsx",
       "app/{route}/loading.tsx",
       "app/{route}/error.tsx",
@@ -114,10 +115,39 @@ export const projectConventions = {
     type: "function components",
     exports: "named exports (prefer)",
     propsTyping: "TypeScript types/interfaces when non-trivial",
+    usage:
+      "DO NOT create page-specific UI components. Prefer config-driven rendering. Only create components if explicitly required.",
   },
   stylingConventions: {
     default: "Tailwind-first",
     globals: "app/globals.css",
     helper: "lib/utils.ts: cn(...)",
+  },
+  uiArchitecture: {
+    pattern: "config-driven UI",
+
+    rule: [
+      "UI MUST be defined in page.config.ts",
+      "page.tsx MUST only render config",
+      "NO hardcoded JSX UI in page files",
+    ],
+
+    configStructure: {
+      root: "export const config = { elements: Element[] }",
+
+      elementTypes: {
+        text: "{ id, type: 'text', text }",
+        container: "{ id, type: 'container', children: Element[] }",
+      },
+
+      rules: [
+        "Use only 'text' and 'container'",
+        "No props object",
+        "No additional fields",
+        "No styling inside config",
+        "Recursive structure via children",
+        "IDs must be unique per page",
+      ],
+    },
   },
 } as const satisfies ProjectConventionsConfig;

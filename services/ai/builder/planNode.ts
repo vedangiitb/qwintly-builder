@@ -27,7 +27,6 @@ export function makePlanNode(
       collectedContext: state.collectedContext,
       plannerIndex,
       isNewProject,
-      requestTypeLabel: requestType,
     });
 
     const deps = createAiCoreWorkspaceDeps();

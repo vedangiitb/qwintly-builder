@@ -6,6 +6,7 @@ export interface ProjectConventionsConfig {
   namingConventions: NamingConventionsConfig;
   componentConventions: ComponentConventionsConfig;
   stylingConventions: StylingConventionsConfig;
+  uiArchitecture: UIArchitectureConfig;
 }
 
 export interface ShadcnConventionsConfig {
@@ -23,6 +24,7 @@ export interface ImportsConventionsConfig {
 
 export interface RoutingConventionsConfig {
   required: readonly string[];
+  requiredPerRoute: readonly string[];
   optionalPerRoute: readonly string[];
   routeGroups: string;
   dynamicSegments: string;
@@ -38,10 +40,24 @@ export interface ComponentConventionsConfig {
   type: string;
   exports: string;
   propsTyping: string;
+  usage: string;
 }
 
 export interface StylingConventionsConfig {
   default: string;
   globals: string;
   helper: string;
+}
+
+export interface UIArchitectureConfig {
+  pattern: string;
+  rule: readonly string[];
+  configStructure: {
+    root: string;
+    elementTypes: {
+      text: string;
+      container: string;
+    };
+    rules: readonly string[];
+  };
 }

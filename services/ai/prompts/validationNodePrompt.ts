@@ -60,7 +60,6 @@ You MAY use these tools to inspect the workspace before finalizing tasks:
 * submit_planner_tasks (FINAL)
 
 **IMPORTANT**:
-- You NO LONGER have create_file or delete_file tools.
 - The Codegen agent IS capable of creating/deleting files via apply_patch.
 - If your plan requires a new file, include the creation instruction in the task description for the Codegen agent.
 

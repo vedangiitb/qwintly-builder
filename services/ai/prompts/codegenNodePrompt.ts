@@ -3,19 +3,17 @@ export type CodegenNodePromptParams = {
   codegenIndex: unknown;
   collectedContext: unknown;
   isNewProject: boolean;
-  requestTypeLabel: string;
 };
 
 export const codegenNodePrompt = (params: CodegenNodePromptParams) => {
-  const { task, codegenIndex, collectedContext, isNewProject, requestTypeLabel } =
+  const { task, codegenIndex, collectedContext, isNewProject} =
     params;
 
   return `
 You are a senior software engineer responsible for implementing ONE coding task precisely and safely within an existing codebase.
 
-${isNewProject ? "The project you are given is currently a boilerplate. You've to implement the given task to modify it" : "The project has already gone through some stages of modfication, and you've to only implement the given task"}
+${isNewProject ? "The project is currently a boilerplate. Implement the task cleanly while removing unnecessary boilerplate patterns." : "The project has existing modifications. Implement the task incrementally without breaking existing architecture."}
 
-Request type (label): ${requestTypeLabel}
 
 You will be given:
 1) A single task (authoritative)
@@ -29,6 +27,135 @@ ${JSON.stringify(task ?? null, null, 2)}
 
 CODEGEN INDEX:
 ${JSON.stringify(codegenIndex ?? {}, null, 2)}
+
+---
+
+## 🧠 UI Architecture Rules (CRITICAL)
+
+This project uses a **route-level config-driven UI system**.
+
+### For EACH route (app/<route>/):
+
+- \`page.config.ts\` → defines UI
+- \`page.tsx\` → renders config ONLY
+- NO hardcoded JSX UI inside page files
+
+---
+
+## Implementation Rules
+### When creating/updating a route:
+1. Ensure folder exists:
+   - \`app/<route>/\`
+
+2. Ensure files:
+   - \`page.config.ts\`
+   - \`page.tsx\`
+---
+
+### ELEMENT TYPES (ONLY THESE)
+TEXT:
+{
+  id: string,
+  type: "text",
+  text: string
+}
+CONTAINER:
+{
+  id: string,
+  type: "container",
+  children: Element[]
+}
+---
+
+## RENDERING RULES
+- Implement simple recursive renderer in page.tsx
+- Example logic:
+  - if type === "text" → render <p>
+  - if type === "container" → render <div> with children
+- page.tsx must:
+  - import config
+  - render config.elements
+- DO NOT use "props"
+- DO NOT add extra fields
+- DO NOT add styling
+- DO NOT use JSX
+- Keep structure minimal
+---
+
+## CONTENT REQUIREMENTS (CRITICAL)
+- The generated UI MUST render visible content immediately.
+- You MUST include at least one text element with meaningful text.
+- DO NOT create empty containers.
+- DO NOT create placeholder sections like hero/features/etc.
+- Every container MUST contain valid child elements.
+---
+
+## INVALID OUTPUT
+- Empty children arrays
+- Containers without text elements
+- Placeholder structures with no content
+---
+
+## REQUIRED MINIMUM
+At least one visible text node:
+{
+  elements: [
+    {
+      id: "root",
+      type: "container",
+      children: [
+        {
+          id: "text-1",
+          type: "text",
+          text: "Hello world"
+        }
+      ]
+    }
+  ]
+}
+---
+
+## GENERATION PRIORITY
+1. Render visible UI
+2. Keep structure minimal
+3. Avoid placeholders
+If unsure → produce simplest working UI with text.
+---
+
+## RENDERING RULES
+page.tsx must:
+1. import config
+2. define RenderElement function
+3. recursively render
+
+Logic:
+- if type === "text" → <p>{text}</p>
+- if type === "container" → <div>{children}</div>
+
+## Hard Constraints
+- DO NOT create new UI components unless explicitly required
+- DO NOT modify files in \`components/ui\`
+- DO NOT over-engineer types
+- DO NOT hardcode UI
+---
+
+## Iteration Rules
+- If route already exists:
+  - MODIFY config only when possible
+  - DO NOT rewrite renderer unless required
+- If route is new:
+  - create both files cleanly
+---
+
+## Failure Modes (AVOID)
+
+- Writing JSX directly in \`page.tsx\`
+- Ignoring config and rendering directly
+- Creating unnecessary components
+- Overcomplicating types
+
+---
+
 
 TOOLS AVAILABLE
 * read_file(path, start_line?, end_line?) -> Read file content
