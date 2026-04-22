@@ -16,6 +16,7 @@ export const buildCodegenIndex = async (
     projectConventions: {
       importsConventions: projectConventions.importsConventions,
       stylingConventions: projectConventions.stylingConventions,
+      uiArchitecture: projectConventions.uiArchitecture,
     },
   };
 };

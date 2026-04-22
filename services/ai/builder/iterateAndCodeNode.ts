@@ -54,7 +54,6 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
         codegenIndex,
         collectedContext: state.collectedContext,
         isNewProject,
-        requestTypeLabel: requestType,
       }).concat(snapshotBlock);
 
       await runToolLoop({
@@ -138,6 +137,7 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
       for (const target of task.targets ?? []) {
         history.push({ file: target, fix: task.description });
       }
+      deps.logger.info(`Completed task ${task.description}`);
     }
 
     return { iteration, validationFixHistory: history };

@@ -11,7 +11,7 @@ export type CodegenIndex = {
   >;
   projectConventions: Pick<
     typeof projectConventions,
-    "importsConventions" | "stylingConventions"
+    "importsConventions" | "stylingConventions" | "uiArchitecture"
   >;
 };
 
