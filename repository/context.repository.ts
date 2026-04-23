@@ -2,7 +2,7 @@ import {
   CollectedContext,
   defaultCollectedContext,
 } from "../types/context.types.js";
-import { defaultProjectInfo, ProjectInfo } from "../types/projectInfo.types.js";
+import { ProjectInfo } from "../types/projectInfo.types.js";
 import { DBRepository } from "./repository.js";
 
 export class ContextRepository extends DBRepository {
@@ -49,31 +49,6 @@ export class ContextRepository extends DBRepository {
         ...(raw.constraints ?? {}),
       },
       otherInfo: raw.otherInfo ?? [],
-    };
-  }
-
-  /*
-   * Table: project_context
-   * Use: Fetch project info (READ)
-   */
-  async fetchProjectInfo(id: string): Promise<ProjectInfo> {
-    const supabase = this.client;
-
-    const { data, error } = await supabase
-      .from("project_context")
-      .select("project_info")
-      .eq("id", id)
-      .maybeSingle();
-
-    if (error) throw error;
-    if (!data) return defaultProjectInfo;
-
-    const raw = data.project_info ?? {};
-
-    return {
-      ...defaultProjectInfo,
-      ...raw,
-      uiPages: raw.uiPages ?? defaultProjectInfo.uiPages,
     };
   }
 
