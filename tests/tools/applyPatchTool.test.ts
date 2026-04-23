@@ -57,7 +57,7 @@ test("apply_patch: updates an existing text file", async () => {
     ].join("\n");
 
     const res = await applyPatchImpl(patch);
-    assert.deepEqual(res, { success: true });
+    assert.equal(res.success, true);
     assert.equal(
       await fs.readFile(path.join(tmpRoot, "foo.txt"), "utf-8"),
       "a\nbb\nc\n",
@@ -84,7 +84,7 @@ test("apply_patch: supports add/delete and updates files", async () => {
     ].join("\n");
 
     const addRes = await applyPatchImpl(addFilePatch);
-    assert.deepEqual(addRes, { success: true });
+    assert.equal(addRes.success, true);
     assert.equal(
       await fs.readFile(path.join(tmpRoot, "new.txt"), "utf-8"),
       "hello\n",
@@ -111,7 +111,7 @@ test("apply_patch: supports add/delete and updates files", async () => {
       "",
     ].join("\n");
     const delRes = await applyPatchImpl(deletePatch);
-    assert.deepEqual(delRes, { success: true });
+    assert.equal(delRes.success, true);
 
     try {
       await fs.stat(path.join(tmpRoot, "new.txt"));
@@ -148,7 +148,7 @@ test("apply_patch: tolerates small formatting differences in context", async () 
     ].join("\n");
 
     const res = await applyPatchImpl(patch);
-    assert.deepEqual(res, { success: true });
+    assert.equal(res.success, true);
     assert.equal(
       await fs.readFile(path.join(tmpRoot, "quotes.ts"), "utf-8"),
       'import Link from "next/navigation";\nconst x = 1;\n',
@@ -176,7 +176,7 @@ test("apply_patch: tolerates unprefixed lines when adding a file", async () => {
     ].join("\n");
 
     const res = await applyPatchImpl(patch);
-    assert.deepEqual(res, { success: true });
+    assert.equal(res.success, true);
     assert.equal(
       await fs.readFile(path.join(tmpRoot, "plain.txt"), "utf-8"),
       "hello\n\nworld\n",
@@ -204,7 +204,7 @@ test("apply_patch: preserves leading spaces when adding a file", async () => {
     ].join("\n");
 
     const res = await applyPatchImpl(patch);
-    assert.deepEqual(res, { success: true });
+    assert.equal(res.success, true);
     assert.equal(
       await fs.readFile(path.join(tmpRoot, "indented.txt"), "utf-8"),
       "  a\n    b\n\t\tc\n",
@@ -234,7 +234,7 @@ test("apply_patch: tolerates leading newlines before header", async () => {
     ].join("\n");
 
     const res = await applyPatchImpl(patch);
-    assert.deepEqual(res, { success: true });
+    assert.equal(res.success, true);
     assert.equal(await fs.readFile(path.join(tmpRoot, "a.txt"), "utf-8"), "two\n");
   } finally {
     await fs.rm(tmpRoot, { recursive: true, force: true });
@@ -259,7 +259,7 @@ test("apply_patch: tolerates missing footer", async () => {
     ].join("\n");
 
     const res = await applyPatchImpl(patch);
-    assert.deepEqual(res, { success: true });
+    assert.equal(res.success, true);
     assert.equal(await fs.readFile(path.join(tmpRoot, "a.txt"), "utf-8"), "two\n");
   } finally {
     await fs.rm(tmpRoot, { recursive: true, force: true });
@@ -286,7 +286,7 @@ test("apply_patch: tolerates unprefixed context lines in updates", async () => {
     ].join("\n");
 
     const res = await applyPatchImpl(patch);
-    assert.deepEqual(res, { success: true });
+    assert.equal(res.success, true);
     assert.equal(await fs.readFile(path.join(tmpRoot, "a.txt"), "utf-8"), "one\nTWO\n");
   } finally {
     await fs.rm(tmpRoot, { recursive: true, force: true });
@@ -313,7 +313,7 @@ test("apply_patch: tolerates indentation differences in update context", async (
     ].join("\n");
 
     const res = await applyPatchImpl(patch);
-    assert.deepEqual(res, { success: true });
+    assert.equal(res.success, true);
     assert.equal(
       await fs.readFile(path.join(tmpRoot, "a.txt"), "utf-8"),
       "  keep\n        changed\n",

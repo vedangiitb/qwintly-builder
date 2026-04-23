@@ -1,4 +1,5 @@
 import "./buildFolderTree.test.js";
+import "./projectInfoIndex.test.js";
 import "./tools/fileTools.test.js";
 import "./tools/listDirTool.test.js";
 import "./tools/searchTool.test.js";
