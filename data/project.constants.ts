@@ -9,7 +9,7 @@ export const ProjectPathConstants = (chatId: string) => {
     baseTemplate: "base-template.zip",
     codeIndex: `indexes/code_index-${chatId}.json`,
     tmpZipPath: `/tmp/template_${chatId}.zip`,
-    snapShotPath: `projects/snapshot_${chatId}.zip`,
+    snapShotPath: `projects/${chatId}.zip`,
   };
 };
 export type ProjectRequestType =

@@ -51,7 +51,7 @@ export async function runProjectFlow() {
    * Generate Project Info Index
    */
   await step("Building Project Info", () => buildProjectInfo(), {
-    retries: 2,
+    retries: 1,
   });
 
   /*

@@ -24,9 +24,25 @@ test("computeProjectInfo indexes app router pages from page.config.ts", async ()
     path.join(aboutDir, "page.config.ts"),
     [
       "export const config = {",
-      "  elements: [],",
-      "  sectionName: \"Hero\",",
-      "  sectionName: \"FAQ\",",
+      "  elements: [",
+      "    {",
+      "      id: \"root\",",
+      "      type: \"container\",",
+      "      children: [",
+      "        {",
+      "          id: \"hero-container\",",
+      "          type: \"container\",",
+      "          children: [",
+      "            { id: \"hero-heading\", type: \"text\", text: \"Hello\" },",
+      "          ],",
+      "        },",
+      "        { id: \"features-section\", type: \"container\", children: [] },",
+      "        { id: \"pricing-section\", type: \"container\", children: [] },",
+      "        { id: \"testimonials-section\", type: \"container\", children: [] },",
+      "        { id: \"contact-form-section\", type: \"container\", children: [] },",
+      "      ],",
+      "    },",
+      "  ],",
       "};",
       "",
     ].join("\n"),
@@ -84,8 +100,17 @@ test("computeProjectInfo indexes app router pages from page.config.ts", async ()
   assert.deepEqual(
     aboutPage.sections,
     [
-      { sectionName: "Hero", description: "Hero section for this page" },
-      { sectionName: "FAQ", description: "FAQ section for this page" },
+      { sectionName: "hero", description: "hero section for this page" },
+      { sectionName: "features", description: "features section for this page" },
+      { sectionName: "pricing", description: "pricing section for this page" },
+      {
+        sectionName: "testimonials",
+        description: "testimonials section for this page",
+      },
+      {
+        sectionName: "contact-form",
+        description: "contact-form section for this page",
+      },
     ],
   );
 
@@ -97,4 +122,3 @@ test("computeProjectInfo indexes app router pages from page.config.ts", async ()
 
   await fs.rm(tmpRoot, { recursive: true, force: true });
 });
-
