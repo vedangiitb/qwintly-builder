@@ -4,8 +4,6 @@ export interface ProjectConventionsConfig {
   importsConventions: ImportsConventionsConfig;
   routingConventions: RoutingConventionsConfig;
   namingConventions: NamingConventionsConfig;
-  componentConventions: ComponentConventionsConfig;
-  stylingConventions: StylingConventionsConfig;
   uiArchitecture: UIArchitectureConfig;
 }
 
@@ -36,28 +34,12 @@ export interface NamingConventionsConfig {
   hooks: string;
 }
 
-export interface ComponentConventionsConfig {
-  type: string;
-  exports: string;
-  propsTyping: string;
-  usage: string;
-}
-
-export interface StylingConventionsConfig {
-  default: string;
-  globals: string;
-  helper: string;
-}
-
 export interface UIArchitectureConfig {
   pattern: string;
   rule: readonly string[];
   configStructure: {
     root: string;
-    elementTypes: {
-      text: string;
-      container: string;
-    };
+    elementTypes: Record<string, string>;
     rules: readonly string[];
   };
 }
