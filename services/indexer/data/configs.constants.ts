@@ -111,42 +111,39 @@ export const projectConventions = {
     folders: "kebab-case",
     hooks: "useCamelCase",
   },
-  componentConventions: {
-    type: "function components",
-    exports: "named exports (prefer)",
-    propsTyping: "TypeScript types/interfaces when non-trivial",
-    usage:
-      "DO NOT create page-specific UI components. Prefer config-driven rendering. Only create components if explicitly required.",
-  },
-  stylingConventions: {
-    default: "Tailwind-first",
-    globals: "app/globals.css",
-    helper: "lib/utils.ts: cn(...)",
-  },
   uiArchitecture: {
     pattern: "config-driven UI",
 
     rule: [
-      "UI MUST be defined in page.config.ts",
-      "page.tsx MUST only render config",
-      "NO hardcoded JSX UI in page files",
+      "UI MUST be defined in page.config.ts using BuilderElement[]",
+      "page.tsx MUST only render config via the shared renderer (no hardcoded JSX UI)",
+      "Use only supported ElementType values; do not invent new types",
     ],
 
     configStructure: {
-      root: "export const config = { elements: Element[] }",
+      root: "export const config = { elements: BuilderElement[] }",
 
       elementTypes: {
-        text: "{ id, type: 'text', text }",
-        container: "{ id, type: 'container', children: Element[] }",
+        fragment: "{ id, type: 'fragment', children: BuilderElement[] }",
+        div: "{ id, type: 'div', className?, children?: BuilderElement[] }",
+        text: "{ id, type: 'text', props: { text: string } }",
+        image: "{ id, type: 'image', props: { src: string, alt? } }",
+        button:
+          "{ id, type: 'button', props?: { text? }, children?: BuilderElement[] }",
+        input:
+          "{ id, type: 'input', props?: { placeholder?, value?, type? }, className? }",
+        textarea:
+          "{ id, type: 'textarea', props?: { placeholder?, value? }, className? }",
+        link: "{ id, type: 'link', props?: { href?, text?, target?, rel? }, children?: BuilderElement[] }",
+        icon: "{ id, type: 'icon', props?: { name?, size?, color?, strokeWidth? }, meta?: { name? }, className? }",
       },
 
       rules: [
-        "Use only 'text' and 'container'",
-        "No props object",
-        "No additional fields",
-        "No styling inside config",
-        "Recursive structure via children",
-        "IDs must be unique per page",
+        "Elements MUST follow the BuilderElement schema (id, type, optional props/children/className/meta/visible).",
+        "The top-level element SHOULD be { id: 'root', type: 'div', children: [...] }.",
+        "Text content MUST be in props.text (not a top-level 'text' field).",
+        "Use className for Tailwind-only styling (no inline styles).",
+        "IDs must be unique per page.",
       ],
     },
   },

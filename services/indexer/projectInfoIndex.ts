@@ -84,7 +84,7 @@ const extractDirectContainerIdsFromArrayText = (arrayText: string): string[] => 
       const id = extractPropString(objText, "id");
       const type = extractPropString(objText, "type");
 
-      if (type === "container" && id && id !== "root" && !seen.has(id)) {
+      if (type === "div" && id && id !== "root" && !seen.has(id)) {
         seen.add(id);
         results.push(id);
       }
@@ -141,7 +141,6 @@ const extractRootChildSectionNames = (rootObjText: string): string[] => {
 };
 
 const extractSectionNamesFromConfig = (content: string): string[] => {
-  console.log(content)
   if (!content) return [];
 
   const elementsKey = content.indexOf("elements");
@@ -203,7 +202,7 @@ const extractSectionNamesFromConfig = (content: string): string[] => {
         const id = extractPropString(objText, "id");
         const type = extractPropString(objText, "type");
 
-        if (type === "container" && id === "root") {
+        if (type === "div" && id === "root") {
           const rootSections = extractRootChildSectionNames(objText);
           if (rootSections.length > 0) {
             return rootSections;
@@ -211,7 +210,7 @@ const extractSectionNamesFromConfig = (content: string): string[] => {
         }
 
         if (
-          type === "container" &&
+          type === "div" &&
           id &&
           id !== "root" &&
           (id.endsWith("-section") || id.endsWith("-container"))
@@ -291,8 +290,6 @@ export async function computeProjectInfo(
     const content = await readFile(filePath);
     const sectionNames = extractSectionNamesFromConfig(content);
 
-    console.log(sectionNames)
-
     const page: UiPage = {
       pageRoute,
       pageName,
@@ -324,8 +321,6 @@ export async function computeProjectInfo(
 export async function buildProjectInfo(): Promise<ProjectInfo> {
   const ctx = getJobContext();
   const projectInfo = await computeProjectInfo(ctx.workspace);
-
-  console.log(projectInfo)
 
   const repo = new ContextRepository();
   await repo.updateProjectInfo(ctx.chatId, projectInfo);

@@ -11,7 +11,7 @@ export type CodegenIndex = {
   >;
   projectConventions: Pick<
     typeof projectConventions,
-    "importsConventions" | "stylingConventions" | "uiArchitecture"
+    "importsConventions" | "uiArchitecture"
   >;
 };
 
@@ -27,8 +27,6 @@ export type PlannerIndex = {
     | "importsConventions"
     | "routingConventions"
     | "namingConventions"
-    | "componentConventions"
-    | "stylingConventions"
   >;
 };
 
