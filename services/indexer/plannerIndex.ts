@@ -22,8 +22,6 @@ export const buildPlannerIndex = async (
       importsConventions: projectConventions.importsConventions,
       routingConventions: projectConventions.routingConventions,
       namingConventions: projectConventions.namingConventions,
-      componentConventions: projectConventions.componentConventions,
-      stylingConventions: projectConventions.stylingConventions,
     },
   };
 };
