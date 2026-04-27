@@ -22,6 +22,7 @@ export function makePlanNode(
 ): BuilderNode {
   return async (state) => {
     const isNewProject = requestType === ProjectRequestType.NEW;
+    logger.status("AI: Generating plan…", { phase: "ai_plan" });
     const prompt = planNodePrompt({
       planTasks: state.planTasks ?? [],
       collectedContext: state.collectedContext,
@@ -75,7 +76,18 @@ export function makePlanNode(
         ? parsePlannerTasksUnknown(result.terminalCall.args.planner_tasks)
         : parsePlannerTasksJson(result.finalText);
 
-    logger.info(`plannerTasks ${plannerTasks}`);
+    logger.status(`AI: Plan ready (${plannerTasks.length} tasks)`, {
+      phase: "ai_plan",
+      progress: {
+        current: plannerTasks.length,
+        total: plannerTasks.length,
+        unit: "tasks",
+      },
+    });
+    logger.info("Planner tasks produced", {
+      count: plannerTasks.length,
+      requestType,
+    });
     return { plannerTasks };
   };
 }

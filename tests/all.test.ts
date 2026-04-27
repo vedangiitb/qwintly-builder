@@ -7,3 +7,4 @@ import "./tools/applyPatchTool.test.js";
 import "./tools/toolSchemas.test.js";
 import "./ai/builderGraph.test.js";
 import "./ai/toolLoopRunner.test.js";
+import "./logger.test.js";
