@@ -58,8 +58,7 @@ export async function readFile(path: string) {
   } catch (err) {
     const code = (err as NodeJS.ErrnoException | null)?.code;
     if (code !== "ENOENT") {
-      const errMessage = err instanceof Error ? err.message : String(err);
-      logger.error(`Error while reading file "${path}": ${errMessage}`);
+      logger.error("Error while reading file", err, { path });
     }
     return "";
   }

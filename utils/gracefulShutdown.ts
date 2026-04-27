@@ -88,17 +88,21 @@ process.on("SIGTERM", () => {
 });
 
 process.on("unhandledRejection", (reason) => {
-  logger.error(`Unhandled rejection: ${reason}`);
+  if (reason instanceof Error) {
+    logger.error("Unhandled rejection", reason);
+  } else {
+    logger.error("Unhandled rejection", { reason: String(reason) });
+  }
   shutdown(1, "unhandledRejection").catch((err) =>
-    logger.error(`Unhandled rejection shutdown failed with error ${err}`),
+    logger.error("Unhandled rejection shutdown failed", err),
   );
 });
 
 process.on("uncaughtException", (err) => {
-  logger.error(`Uncaught exception ${err}`);
+  logger.error("Uncaught exception", err);
   // Ensure cleanup runs and then exit with failure
   shutdown(1, "uncaughtException")
-    .catch((err) => logger.error(`Uncaught exception shutdown failed ${err}`))
+    .catch((err) => logger.error("Uncaught exception shutdown failed", err))
     .finally(() => process.exit(1));
 });
 

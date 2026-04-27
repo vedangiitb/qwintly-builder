@@ -9,6 +9,7 @@ import { buildValidatorIndex } from "../indexer/validatorIndex.js";
 import { CollectedContext } from "../../types/context.types.js";
 import { PlanTask } from "../../types/updatePlan.types.js";
 import { AgentState } from "./state.js";
+import { logger } from "../logger/logger.service.js";
 
 export const runBuilderAiFlow = async (
   planTasks: PlanTask[],
@@ -37,5 +38,8 @@ export const runBuilderAiFlow = async (
     validationFixHistory: [],
   };
 
-  return await graph.invoke(initialState);
+  logger.status("AI: Starting builder flow", { phase: "ai_plan" });
+  const result = await graph.invoke(initialState);
+  logger.status("AI: Builder flow complete", { phase: "ai_codegen" });
+  return result;
 };

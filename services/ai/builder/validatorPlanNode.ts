@@ -13,11 +13,20 @@ import {
   parsePlannerTasksJson,
   parsePlannerTasksUnknown,
 } from "./plannerTaskParser.js";
+import { logger } from "../../logger/logger.service.js";
 
 export function makeValidatorPlanNode(
   validatorIndex: ValidatorIndex,
 ): BuilderNode {
   return async (state) => {
+    logger.status("AI: Planning fixes for validation issues…", {
+      phase: "validate",
+      progress: {
+        current: (state.validationErrors ?? []).length,
+        total: (state.validationErrors ?? []).length,
+        unit: "issues",
+      },
+    });
     const prompt = validationNodePrompt({
       errors: state.validationErrors ?? [],
       history: state.validationFixHistory ?? [],
@@ -69,6 +78,15 @@ export function makeValidatorPlanNode(
       result.terminalCall?.name === "submit_planner_tasks"
         ? parsePlannerTasksUnknown(result.terminalCall.args.planner_tasks)
         : parsePlannerTasksJson(result.finalText);
+
+    logger.status(`AI: Fix plan ready (${plannerTasks.length} tasks)`, {
+      phase: "validate",
+      progress: {
+        current: plannerTasks.length,
+        total: plannerTasks.length,
+        unit: "tasks",
+      },
+    });
     return { plannerTasks };
   };
 }
