@@ -9,7 +9,8 @@ This project uses a config-driven UI system with a reusable renderer.
 
 Core pattern (STRICT) for every route:
 - Route folder: \`app/<route>/\`
-- Must contain: \`page.tsx\` and \`page.config.ts\`
+- Must contain: \`page.tsx\` AND \`page.config.ts\`
+- if a route doesn't contain page.tsx or page.config.ts -> it won't be rendered.
 
 Responsibilities:
 - \`page.config.ts\` defines UI using structured data (BuilderElement[])
@@ -184,9 +185,9 @@ export const stylingRules = mdSection(
 );
 
 export const validOutput = mdSection(
-  "Minimum Valid Output",
+  "Minimum Valid Output for page.config.ts",
   `
-At least one visible UI element:
+At least one visible UI element in page.config.ts:
 {
   elements: [
     {
@@ -218,10 +219,23 @@ page.tsx MUST:
 - import RenderElement
 - render config.elements via <RenderElement />
 
+page.tsx for a route MUST Always look like this:
+
+import { config } from "./page.config";
+import { RenderElement } from "@/lib/renderer/RenderElement";
+
+export default function Page() {
+  return config.elements.map((el) => <RenderElement key={el.id} el={el} />);
+}
+
+Do not include config elements in page.tsx. If you want to add a config element, add it to \`page.config.ts\`.
+If you include config elements in page.tsx your edit would be rejected.
+
 DO NOT:
 - define RenderElement locally
 - write custom JSX UI in page.tsx
 - bypass config
+- modify/add layout.tsx for any route - your edit will be rejected
   `.trim(),
 );
 

@@ -52,7 +52,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "langchain": "^1.0.0",
-    "qwintly-ai-core": "github:qwintly/qwintly-ai-core#v1.0.5",
+    "qwintly-ai-core": "github:qwintly/qwintly-ai-core#v1.0.7",
     "unzipper": "^0.12.3",
     "ws": "^8.18.3",
     "zod": "^4.2.1",
