@@ -1,4 +1,4 @@
-import { logger } from "../services/logger/logger.service.js";
+import { getQwintlyCore } from "../services/core/qwintlyCore.service.js";
 import { isStepDone } from "./stepDone.js";
 import { markStepDone } from "./stepDone.js";
 import {
@@ -14,11 +14,12 @@ export async function step<T>(
   fn: StepFn<T>,
   options?: { retries?: number; heartbeatIntervalMs?: number },
 ) {
+  const core = getQwintlyCore();
   const retries = options?.retries ?? 0;
   const totalAttempts = retries + 1;
 
   if (await isStepDone(name)) {
-    logger.info(`Skipping step ${name}`);
+    console.log(`Skipping step ${name}`);
     return;
   }
 
@@ -26,59 +27,47 @@ export async function step<T>(
     const attemptLabel =
       totalAttempts > 1 ? ` (attempt ${attempt}/${totalAttempts})` : "";
     const startedAt = Date.now();
-    const phase = guessPhaseFromName(name);
+
     try {
-      logger.status(`Started ${name}${attemptLabel}`, {
-        phase,
-      });
+      await core.streamLog(`Started ${name}${attemptLabel}`, "step_started" as any);
 
       const result = await withStatusHeartbeat(fn, {
         intervalMs: options?.heartbeatIntervalMs ?? 30_000,
-        meta: { phase },
+        eventType: "step_started",
         message: (elapsedMs) => defaultHeartbeatMessage(name, elapsedMs),
       });
 
       const elapsedMs = Date.now() - startedAt;
-      logger.status(`Done ${name} (${formatDurationMs(elapsedMs)})`, {
-        phase,
-        elapsedMs,
-      });
+      await core.streamLog(
+        `Done ${name} (${formatDurationMs(elapsedMs)})`,
+        "step_finished" as any,
+      );
       await markStepDone(name);
       return result;
     } catch (err: any) {
       const elapsedMs = Date.now() - startedAt;
       if (attempt > retries) {
         const reason = err?.message ? String(err.message) : String(err);
-        logger.status(
+        await core.streamLog(
           `Failed ${name} (after ${formatDurationMs(elapsedMs)}): ${reason}`,
-          { phase: "failed", elapsedMs },
+          "step_error" as any,
         );
-        logger.error(`Step failed: ${name}`, err, {
-          step: name,
+        console.error(`Step failed: ${name}`, {
           attempt,
           totalAttempts,
           elapsedMs,
+          error: err,
         });
         throw err;
       }
-      logger.status(`Retrying ${name} (attempt ${attempt + 1}/${totalAttempts})`, {
-        phase,
-        elapsedMs,
-      });
+
+      await core.streamLog(
+        `Retrying ${name} (attempt ${attempt + 1}/${totalAttempts})`,
+        "step_retry" as any,
+      );
     }
   }
+
   throw new Error("Unreachable");
 }
 
-const guessPhaseFromName = (name: string) => {
-  const n = name.toLowerCase();
-  if (n.includes("plan task")) return "fetch_inputs";
-  if (n.includes("project context")) return "fetch_inputs";
-  if (n.includes("clon") || n.includes("template") || n.includes("snapshot"))
-    return "clone";
-  if (n.includes("builder ai")) return "ai_codegen";
-  if (n.includes("building project info")) return "ai_codegen";
-  if (n.includes("zipping")) return "zip";
-  if (n.includes("upload")) return "upload";
-  return undefined;
-};

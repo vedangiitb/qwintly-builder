@@ -1,9 +1,9 @@
-import { logger, StatusMeta } from "../services/logger/logger.service.js";
+import { getQwintlyCore } from "../services/core/qwintlyCore.service.js";
 import { formatDurationMs } from "./formatDuration.js";
 
 type HeartbeatOptions = {
   intervalMs?: number;
-  meta?: StatusMeta;
+  eventType?: string;
   message: (elapsedMs: number) => string;
 };
 
@@ -18,11 +18,9 @@ export async function withStatusHeartbeat<T>(
   if (intervalMs > 0) {
     timer = setInterval(() => {
       const elapsedMs = Date.now() - startedAt;
-      logger.status(options.message(elapsedMs), {
-        ...(options.meta ?? {}),
-        elapsedMs,
-        heartbeat: true,
-      });
+      getQwintlyCore()
+        .streamLog(options.message(elapsedMs), (options.eventType ?? "step_started") as any)
+        .catch((err) => console.warn("Heartbeat streamLog failed", err));
     }, intervalMs);
     timer.unref();
   }

@@ -1,5 +1,3 @@
-import { logger } from "../services/logger/logger.service.js";
-
 type CleanupFn = () => Promise<void> | void;
 
 const cleanups: CleanupFn[] = [];
@@ -28,11 +26,11 @@ export async function shutdown(
   if (shuttingDown) return shutdownPromise || Promise.resolve();
   shuttingDown = true;
   process.exitCode = code;
-  if (reason) logger.info(`Shutting down ${reason} with code ${code}`);
+  if (reason) console.log(`Shutting down ${reason} with code ${code}`);
 
   const tasks = cleanups.map((fn) =>
     runCleanupWithTimeout(fn, timeoutMs).catch((err) => {
-      logger.error(
+      console.error(
         `Cleanup failed with error  ${err.message ? err.message : err}`,
       );
     }),
@@ -56,22 +54,22 @@ function handleSignal(signal: "SIGINT" | "SIGTERM", code: number) {
 
   // Second Ctrl+C (or repeated SIGTERM) => exit immediately.
   if (shuttingDown || isSecondSignal) {
-    logger.warn(`Received ${signal} again; forcing exit`);
+    console.warn(`Received ${signal} again; forcing exit`);
     process.exit(code);
     return;
   }
 
-  logger.warn(`Received ${signal}`);
+  console.warn(`Received ${signal}`);
 
   // Force-exit fallback in case something keeps the event loop alive.
   const forceExitTimer = setTimeout(() => {
-    logger.error(`Timed out during ${signal} shutdown; forcing exit`);
+    console.error(`Timed out during ${signal} shutdown; forcing exit`);
     process.exit(code);
   }, 6500);
   forceExitTimer.unref();
 
   safeExit(code, signal).catch((err) => {
-    logger.error(
+    console.error(
       `${signal} shutdown failed with error ${err.message ? err.message : err}`,
     );
     process.exit(code);
@@ -89,20 +87,20 @@ process.on("SIGTERM", () => {
 
 process.on("unhandledRejection", (reason) => {
   if (reason instanceof Error) {
-    logger.error("Unhandled rejection", reason);
+    console.error("Unhandled rejection", reason);
   } else {
-    logger.error("Unhandled rejection", { reason: String(reason) });
+    console.error("Unhandled rejection", { reason: String(reason) });
   }
   shutdown(1, "unhandledRejection").catch((err) =>
-    logger.error("Unhandled rejection shutdown failed", err),
+    console.error("Unhandled rejection shutdown failed", err),
   );
 });
 
 process.on("uncaughtException", (err) => {
-  logger.error("Uncaught exception", err);
+  console.error("Uncaught exception", err);
   // Ensure cleanup runs and then exit with failure
   shutdown(1, "uncaughtException")
-    .catch((err) => logger.error("Uncaught exception shutdown failed", err))
+    .catch((err) => console.error("Uncaught exception shutdown failed", err))
     .finally(() => process.exit(1));
 });
 

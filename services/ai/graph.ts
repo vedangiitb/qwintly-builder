@@ -1,32 +1,31 @@
 import { getJobContext } from "../../job/jobContext.js";
+import { getQwintlyCore } from "../core/qwintlyCore.service.js";
 import { createBuilderGraph } from "./builder/createBuilderGraph.js";
 import { makeIterateAndCodeNode } from "./builder/iterateAndCodeNode.js";
 import { makePlanNode } from "./builder/planNode.js";
 import { validationNode } from "./builder/validationNode.js";
 import { makeValidatorPlanNode } from "./builder/validatorPlanNode.js";
-import { buildPlannerIndex } from "../indexer/plannerIndex.js";
-import { buildValidatorIndex } from "../indexer/validatorIndex.js";
 import { CollectedContext } from "../../types/context.types.js";
 import { PlanTask } from "../../types/updatePlan.types.js";
 import { AgentState } from "./state.js";
-import { logger } from "../logger/logger.service.js";
 
 export const runBuilderAiFlow = async (
   planTasks: PlanTask[],
   collectedContext: CollectedContext,
 ) => {
+  const core = getQwintlyCore();
   const [plannerIndex, validatorIndex] = await Promise.all([
-    buildPlannerIndex(),
-    buildValidatorIndex(),
+    core.buildPlannerIdx(),
+    core.buildValidatorIdx(),
   ]);
 
   const ctx = getJobContext();
 
   const graph = createBuilderGraph({
-    plan: makePlanNode(plannerIndex, ctx.requestType),
+    plan: makePlanNode(plannerIndex as any, ctx.requestType),
     codegen: makeIterateAndCodeNode(ctx.requestType),
     validate: validationNode,
-    validationPlan: makeValidatorPlanNode(validatorIndex),
+    validationPlan: makeValidatorPlanNode(validatorIndex as any),
   });
 
   const initialState: AgentState = {
@@ -38,8 +37,9 @@ export const runBuilderAiFlow = async (
     validationFixHistory: [],
   };
 
-  logger.status("AI: Starting builder flow", { phase: "ai_plan" });
+  await core.streamLog("AI: Starting builder flow", "step_started" as any);
   const result = await graph.invoke(initialState);
-  logger.status("AI: Builder flow complete", { phase: "ai_codegen" });
+  await core.streamLog("AI: Builder flow complete", "step_finished" as any);
   return result;
 };
+

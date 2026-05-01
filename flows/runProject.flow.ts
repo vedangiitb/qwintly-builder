@@ -7,7 +7,7 @@ import { fetchProjectContext } from "../services/project/fetchProjectContext.js"
 import { fetchPlanTasks } from "../services/project/getRequest.service.js";
 import { zipProject } from "../services/project/zipProject.service.js";
 import { uploadProjectSnapshot } from "../services/snapshot/uploadSnapshot.service.js";
-import { buildProjectInfo } from "../services/indexer/projectInfoIndex.js";
+import { getQwintlyCore } from "../services/core/qwintlyCore.service.js";
 
 export async function runProjectFlow() {
   const ctx = getJobContext();
@@ -50,7 +50,7 @@ export async function runProjectFlow() {
   /*
    * Generate Project Info Index
    */
-  await step("Building Project Info", () => buildProjectInfo(), {
+  await step("Building Project Info", () => getQwintlyCore().buildProjectInfoIdx(), {
     retries: 1,
   });
 

@@ -1,6 +1,5 @@
 import { uploadFileToGCS } from "../../infra/gcs/upload.js";
 import { getJobContext } from "../../job/jobContext.js";
-import { logger } from "../logger/logger.service.js";
 
 export async function uploadProjectSnapshot() {
   const ctx = getJobContext();
@@ -9,7 +8,7 @@ export async function uploadProjectSnapshot() {
   const bucketName = ctx.snapshotBucket;
   const projectId = ctx.projectId;
   const destination = `projects/${chatId}.zip`;
-  logger.info(
+  console.log(
     `Uploading project snapshot "${zipPath}" to bucket "${bucketName}" at "${destination}" (projectId="${projectId}")`,
   );
 
@@ -17,7 +16,7 @@ export async function uploadProjectSnapshot() {
 
   try {
     await uploadFileToGCS(projectId, zipPath, bucketName, destination);
-    logger.info(
+    console.log(
       `Uploaded project snapshot to bucket "${bucketName}" at "${destination}"`,
     );
   } catch (e) {
