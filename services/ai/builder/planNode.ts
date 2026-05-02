@@ -16,7 +16,7 @@ export function makePlanNode(
   requestType: string,
 ): BuilderNode {
   return async (state) => {
-    const core = getQwintlyCore();
+    const core = await getQwintlyCore();
     const isNewProject = requestType === ProjectRequestType.NEW;
 
     await core.streamLog("AI: Generating plan...", "step_started" as any);
@@ -83,4 +83,3 @@ export function makePlanNode(
     return { plannerTasks };
   };
 }
-

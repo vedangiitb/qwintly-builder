@@ -4,7 +4,7 @@ import { NextRulesValidator } from "../../validator/validators/NextRulesValidato
 import { getQwintlyCore } from "../../core/qwintlyCore.service.js";
 
 export const validationNode: BuilderNode = async () => {
-  const core = getQwintlyCore();
+  const core = await getQwintlyCore();
   await core.streamLog("Validating project...", "step_started" as any);
 
   const [nextErrors, heuristicErrors] = await Promise.all([
@@ -27,4 +27,3 @@ export const validationNode: BuilderNode = async () => {
     validationErrors: errors,
   };
 };
-

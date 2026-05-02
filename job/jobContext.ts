@@ -1,37 +1,64 @@
 // Session/workspace/env context
+import jwt from "jsonwebtoken";
 import {
-  CHAT_ID,
   GCP_PROJECT_ID_QWINTLY,
   GEN_SITES_PROJECT_ID,
-  REQUEST_TYPE,
+  JOB_TOKEN,
   SESSION_ID,
   SNAPSHOT_BUCKET,
-  TASKS_PLAN_ID,
   TEMPLATE_BUCKET,
 } from "../config/env.js";
 
 /*
  * Job context from Worker
- * CHAT_ID, SESSION_ID, REQUEST_TYPE & TASKS_PLAN_ID
+ * SESSION_ID & JOB_TOKEN
  *
  * Env secrets/variables
- * SNAPSHOT_BUCKET, GCP_PROJECT_ID_QWINTLY, TEMPLATE_BUCKET, GEN_SITES_PROJECT_ID
+ * All others
  */
 
 let cachedJobContext: JobContext | null = null;
 
+function normalizeString(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
 export function createJobContext() {
-  if (!CHAT_ID || !REQUEST_TYPE || !TASKS_PLAN_ID || !SESSION_ID) {
-    throw new Error("Missing required env vars");
+  if (!JOB_TOKEN) {
+    throw new Error("Missing auth token");
   }
 
+  let tokenPayload: {
+    userId: string;
+    provider: string;
+    chatId: string;
+    planId: string;
+    requestType: string;
+  };
+  try {
+    tokenPayload = jwt.verify(
+      JOB_TOKEN,
+      process.env.PUBLISH_SECRET!,
+    ) as typeof tokenPayload;
+  } catch (err) {
+    throw new Error("Invalid or expired token");
+  }
+
+  const chatId = normalizeString(tokenPayload.chatId);
+  const planId = normalizeString(tokenPayload.planId);
+  const requestType = normalizeString(tokenPayload.requestType);
+  const provider = normalizeString(tokenPayload.provider);
+  const userId = normalizeString(tokenPayload.userId);
+
   return {
-    chatId: CHAT_ID,
+    chatId: chatId,
+    requestType: requestType,
+    tasksPlanId: planId,
+    provider: provider,
+    userId: userId,
     sessionId: SESSION_ID,
-    requestType: REQUEST_TYPE,
-    tasksPlanId: TASKS_PLAN_ID,
     workspace: `/tmp/workspace`,
-    zipPath: `/tmp/${CHAT_ID}.zip`,
+    zipPath: `/tmp/${chatId}.zip`,
     snapshotBucket: SNAPSHOT_BUCKET,
     projectId: GCP_PROJECT_ID_QWINTLY,
     templateBucket: TEMPLATE_BUCKET,

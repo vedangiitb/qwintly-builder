@@ -13,7 +13,7 @@ export const runBuilderAiFlow = async (
   planTasks: PlanTask[],
   collectedContext: CollectedContext,
 ) => {
-  const core = getQwintlyCore();
+  const core = await getQwintlyCore();
   const [plannerIndex, validatorIndex] = await Promise.all([
     core.buildPlannerIdx(),
     core.buildValidatorIdx(),
@@ -42,4 +42,3 @@ export const runBuilderAiFlow = async (
   await core.streamLog("AI: Builder flow complete", "step_finished" as any);
   return result;
 };
-

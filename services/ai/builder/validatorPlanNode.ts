@@ -14,7 +14,7 @@ export function makeValidatorPlanNode(
   validatorIndex: ValidatorIndex,
 ): BuilderNode {
   return async (state) => {
-    const core = getQwintlyCore();
+    const core = await getQwintlyCore();
 
     await core.streamLog(
       "AI: Planning fixes for validation issues...",
@@ -78,4 +78,3 @@ export function makeValidatorPlanNode(
     return { plannerTasks };
   };
 }
-

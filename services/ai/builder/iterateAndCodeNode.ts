@@ -10,7 +10,7 @@ import { withStatusHeartbeat } from "../../../utils/withStatusHeartbeat.js";
 
 export function makeIterateAndCodeNode(requestType: string): BuilderNode {
   return async (state) => {
-    const core = getQwintlyCore();
+    const core = await getQwintlyCore();
     const iteration = (state.iteration ?? 0) + 1;
     const history = [...(state.validationFixHistory ?? [])];
 
@@ -143,4 +143,3 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
     return { iteration, validationFixHistory: history };
   };
 }
-

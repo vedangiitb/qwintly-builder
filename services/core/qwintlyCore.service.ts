@@ -1,20 +1,22 @@
 import { QwintlyCore } from "@vedangiitb/qwintly-core";
 import { getJobContext } from "../../job/jobContext.js";
 import {
-  GEMINI_API_KEY,
   SUPABASE_ENDPOINT,
   SUPABASE_SECRET,
   UPSTASH_TOKEN,
   UPSTASH_URL,
 } from "../../config/env.js";
+import { getKeyFromUserid } from "../byok/byok.service.js";
 
 let cachedCore: QwintlyCore | null = null;
 const GEMINI_MODEL = "gemini-2.5-flash-lite";
 
-export function getQwintlyCore(): QwintlyCore {
+export async function getQwintlyCore(): Promise<QwintlyCore> {
   if (cachedCore) return cachedCore;
 
   const ctx = getJobContext();
+
+  const GEMINI_API_KEY = await getKeyFromUserid(ctx.userId, ctx.provider);
 
   cachedCore = new QwintlyCore({
     chatId: ctx.chatId,

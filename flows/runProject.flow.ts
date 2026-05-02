@@ -11,6 +11,7 @@ import { getQwintlyCore } from "../services/core/qwintlyCore.service.js";
 
 export async function runProjectFlow() {
   const ctx = getJobContext();
+  const core = await getQwintlyCore();
   /*
    * Fetch plan tasks, project context, and clone project Snapshot/Template
    */
@@ -50,7 +51,7 @@ export async function runProjectFlow() {
   /*
    * Generate Project Info Index
    */
-  await step("Building Project Info", () => getQwintlyCore().buildProjectInfoIdx(), {
+  await step("Building Project Info", () => core.buildProjectInfoIdx(), {
     retries: 1,
   });
 

@@ -14,7 +14,7 @@ export async function step<T>(
   fn: StepFn<T>,
   options?: { retries?: number; heartbeatIntervalMs?: number },
 ) {
-  const core = getQwintlyCore();
+  const core = await getQwintlyCore();
   const retries = options?.retries ?? 0;
   const totalAttempts = retries + 1;
 
@@ -29,7 +29,10 @@ export async function step<T>(
     const startedAt = Date.now();
 
     try {
-      await core.streamLog(`Started ${name}${attemptLabel}`, "step_started" as any);
+      await core.streamLog(
+        `Started ${name}${attemptLabel}`,
+        "step_started" as any,
+      );
 
       const result = await withStatusHeartbeat(fn, {
         intervalMs: options?.heartbeatIntervalMs ?? 30_000,
@@ -70,4 +73,3 @@ export async function step<T>(
 
   throw new Error("Unreachable");
 }
-
