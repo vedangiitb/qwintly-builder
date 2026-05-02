@@ -1,48 +1,40 @@
-import { FunctionCallingConfigMode } from "@google/genai";
-import {
-  createWorkspaceToolImpls,
-  plannerTools,
-  runToolLoop,
-} from "qwintly-ai-core";
-import { aiResponse } from "../../../infra/ai/gemini.client.js";
-import { ValidatorIndex } from "../../../types/index/index.types.js";
-import { createAiCoreWorkspaceDeps } from "../helpers/aiCoreDeps.js";
+import { ValidatorIndex } from "@vedangiitb/qwintly-core";
+import { getQwintlyCore } from "../../core/qwintlyCore.service.js";
+import { createWorkspaceToolImpls } from "@vedangiitb/qwintly-core";
+import { plannerTools } from "@vedangiitb/qwintly-core";
+import { createWorkspaceDeps } from "./workspaceDeps.service.js";
 import { validationNodePrompt } from "../prompts/validationNodePrompt.js";
 import { BuilderNode } from "./createBuilderGraph.js";
 import {
   parsePlannerTasksJson,
   parsePlannerTasksUnknown,
 } from "./plannerTaskParser.js";
-import { logger } from "../../logger/logger.service.js";
 
 export function makeValidatorPlanNode(
   validatorIndex: ValidatorIndex,
 ): BuilderNode {
   return async (state) => {
-    logger.status("AI: Planning fixes for validation issues…", {
-      phase: "validate",
-      progress: {
-        current: (state.validationErrors ?? []).length,
-        total: (state.validationErrors ?? []).length,
-        unit: "issues",
-      },
-    });
+    const core = await getQwintlyCore();
+
+    await core.streamLog(
+      "AI: Planning fixes for validation issues...",
+      "step_started" as any,
+    );
+
     const prompt = validationNodePrompt({
       errors: state.validationErrors ?? [],
       history: state.validationFixHistory ?? [],
       validatorIndex,
     });
 
-    const deps = createAiCoreWorkspaceDeps();
+    const deps = createWorkspaceDeps();
     const { readFileImpl, searchImpl, listDirImpl } =
       createWorkspaceToolImpls(deps);
 
-    const result = await runToolLoop({
-      initialContents: [{ role: "user", parts: [{ text: prompt }] }],
-      tools: plannerTools(),
-      aiCall: aiResponse as any,
-      logger: deps.logger,
-      handlers: {
+    const result = await core.runAiFlow(
+      [{ role: "user", parts: [{ text: prompt }] }],
+      plannerTools(),
+      {
         read_file: async (args) => {
           const path = String(args.path ?? "");
           const startLine =
@@ -69,24 +61,20 @@ export function makeValidatorPlanNode(
           return { success: true, count: tasks.length };
         },
       },
-      toolCallingMode: FunctionCallingConfigMode.ANY,
-      terminalToolNames: ["submit_planner_tasks"],
-      maxSteps: 25,
-    });
+      25,
+      ["submit_planner_tasks"],
+    );
 
     const plannerTasks =
       result.terminalCall?.name === "submit_planner_tasks"
         ? parsePlannerTasksUnknown(result.terminalCall.args.planner_tasks)
         : parsePlannerTasksJson(result.finalText);
 
-    logger.status(`AI: Fix plan ready (${plannerTasks.length} tasks)`, {
-      phase: "validate",
-      progress: {
-        current: plannerTasks.length,
-        total: plannerTasks.length,
-        unit: "tasks",
-      },
-    });
+    await core.streamLog(
+      `AI: Fix plan ready (${plannerTasks.length} tasks)`,
+      "step_finished" as any,
+    );
+
     return { plannerTasks };
   };
 }

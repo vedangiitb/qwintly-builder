@@ -1,7 +1,6 @@
-import { removeFile, removeFolder } from "../../infra/fs/workspace.js";
+import { removeFile, removeFolder } from "@vedangiitb/qwintly-core";
 import { getJobContext } from "../../job/jobContext.js";
 import { registerCleanupUtil } from "../../utils/gracefulShutdown.js";
-import { logger } from "../logger/logger.service.js";
 
 export const registerCleanup = () => {
   const ctx = getJobContext();
@@ -10,18 +9,18 @@ export const registerCleanup = () => {
   registerCleanupUtil(async () => {
     try {
       await removeFolder(workspace);
-      logger.info(`Workspace removed ${workspace}`);
+      console.log(`Workspace removed ${workspace}`);
     } catch (e) {
-      logger.warn(`Failed to remove Workspace ${workspace}. Err:${e}`);
+      console.warn(`Failed to remove Workspace ${workspace}. Err:${e}`);
     }
   });
 
   registerCleanupUtil(async () => {
     try {
       await removeFile(zipPath);
-      logger.info(`Zip file removed ${zipPath}`);
+      console.log(`Zip file removed ${zipPath}`);
     } catch (e) {
-      logger.warn(
+      console.warn(
         `Failed to remove up zip file ${zipPath} from workspace. Err:${e}`,
       );
     }

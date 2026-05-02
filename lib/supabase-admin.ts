@@ -1,17 +1,15 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { SUPABASE_ENDPOINT, SUPABASE_SECRET } from "../config/env.js";
 
-const NEXT_PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY;
-
-if (!NEXT_PUBLIC_SUPABASE_URL || !SUPABASE_SECRET_KEY) {
+if (!SUPABASE_ENDPOINT || !SUPABASE_SECRET) {
   throw new Error(
     "Missing required environment variables NEXT_PUBLIC_SUPABASE_URL and/or SUPABASE_SECRET_KEY",
   );
 }
 
 export const supabaseAdmin: SupabaseClient = createClient(
-  NEXT_PUBLIC_SUPABASE_URL,
-  SUPABASE_SECRET_KEY,
+  SUPABASE_ENDPOINT,
+  SUPABASE_SECRET,
   {
     auth: {
       persistSession: false,

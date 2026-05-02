@@ -1,10 +1,12 @@
 import { BuilderNode } from "./createBuilderGraph.js";
 import { HeuristicValidator } from "../../validator/validators/HeuristicValidator.js";
 import { NextRulesValidator } from "../../validator/validators/NextRulesValidator.js";
-import { logger } from "../../logger/logger.service.js";
+import { getQwintlyCore } from "../../core/qwintlyCore.service.js";
 
 export const validationNode: BuilderNode = async () => {
-  logger.status("Validating project…", { phase: "validate" });
+  const core = await getQwintlyCore();
+  await core.streamLog("Validating project...", "step_started" as any);
+
   const [nextErrors, heuristicErrors] = await Promise.all([
     NextRulesValidator(),
     HeuristicValidator(),
@@ -12,13 +14,13 @@ export const validationNode: BuilderNode = async () => {
 
   const errors = [...nextErrors, ...heuristicErrors];
   if (errors.length === 0) {
-    logger.status("Validation passed", { phase: "validate" });
+    await core.streamLog("Validation passed", "step_finished" as any);
   } else {
-    logger.status(`Validation found ${errors.length} issue(s)`, {
-      phase: "validate",
-      progress: { current: errors.length, total: errors.length, unit: "issues" },
-    });
-    logger.warn("Validation issues found", { count: errors.length });
+    await core.streamLog(
+      `Validation found ${errors.length} issue(s)`,
+      "step_error" as any,
+    );
+    console.warn("Validation issues found", { count: errors.length });
   }
 
   return {

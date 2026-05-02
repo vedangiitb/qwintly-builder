@@ -1,5 +1,5 @@
 // job/stepState.ts
-import { createFile, stat } from "../infra/fs/workspace.js";
+import { createFile,stat } from "@vedangiitb/qwintly-core";
 import { getJobContext } from "./jobContext.js";
 
 export async function isStepDone(step: string) {

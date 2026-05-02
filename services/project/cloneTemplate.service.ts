@@ -2,11 +2,10 @@ import {
   ProjectPathConstants,
   ProjectRequestType,
 } from "../../data/project.constants.js";
-import { createFolder, removeFolder } from "../../infra/fs/workspace.js";
+import { createFolder,removeFolder } from "@vedangiitb/qwintly-core";
 import { extractZip } from "../../infra/fs/zipFolder.js";
 import { downloadToDestinationGCS } from "../../infra/gcs/download.js";
 import { getJobContext } from "../../job/jobContext.js";
-import { logger } from "../logger/logger.service.js";
 
 export async function cloneTemplate() {
   const ctx = getJobContext();
@@ -26,16 +25,18 @@ export async function cloneTemplate() {
     zipPath = ProjectPathConstants(chatId).snapShotPath;
     projectId = ctx.genSitesProjectId!;
   }
-  logger.info(
+  console.log(
     `Cloning template "${zipPath}" from bucket "${bucketName}" into "${workspacePath}" (projectId="${projectId}")`,
   );
 
   await createFolder(workspacePath);
 
   try {
-    logger.info(`Downloading template zip to "${tmpZipPath}"`);
+    console.log(`Downloading template zip to "${tmpZipPath}"`);
     await downloadToDestinationGCS(tmpZipPath, zipPath, bucketName, projectId);
-    logger.info(`Extracting template zip from "${tmpZipPath}" to "${workspacePath}"`);
+    console.log(
+      `Extracting template zip from "${tmpZipPath}" to "${workspacePath}"`,
+    );
     await extractZip(tmpZipPath, workspacePath);
   } catch (err) {
     const errMessage = err instanceof Error ? err.message : String(err);
@@ -43,12 +44,14 @@ export async function cloneTemplate() {
   } finally {
     try {
       await removeFolder(tmpZipPath);
-      logger.info(`Cleaned up temp zip at "${tmpZipPath}"`);
+      console.log(`Cleaned up temp zip at "${tmpZipPath}"`);
     } catch (err) {
       const errMessage = err instanceof Error ? err.message : String(err);
-      logger.warn(`Failed to clean up temp zip at "${tmpZipPath}": ${errMessage}`);
+      console.warn(
+        `Failed to clean up temp zip at "${tmpZipPath}": ${errMessage}`,
+      );
     }
   }
 
-  logger.info(`Template ready at "${workspacePath}"`);
+  console.log(`Template ready at "${workspacePath}"`);
 }

@@ -1,12 +1,8 @@
-import {
-  codegenTools,
-  createWorkspaceToolImpls,
-  runToolLoop,
-} from "qwintly-ai-core";
 import { ProjectRequestType } from "../../../data/project.constants.js";
-import { aiResponse } from "../../../infra/ai/gemini.client.js";
-import { buildCodegenIndex } from "../../indexer/codegenIndex.js";
-import { createAiCoreWorkspaceDeps } from "../helpers/aiCoreDeps.js";
+import { getQwintlyCore } from "../../core/qwintlyCore.service.js";
+import { createWorkspaceToolImpls } from "@vedangiitb/qwintly-core";
+import { codegenTools } from "@vedangiitb/qwintly-core";
+import { createWorkspaceDeps } from "./workspaceDeps.service.js";
 import { codegenNodePrompt } from "../prompts/codegenNodePrompt.js";
 import { BuilderNode } from "./createBuilderGraph.js";
 import { formatDurationMs } from "../../../utils/formatDuration.js";
@@ -14,10 +10,11 @@ import { withStatusHeartbeat } from "../../../utils/withStatusHeartbeat.js";
 
 export function makeIterateAndCodeNode(requestType: string): BuilderNode {
   return async (state) => {
+    const core = await getQwintlyCore();
     const iteration = (state.iteration ?? 0) + 1;
     const history = [...(state.validationFixHistory ?? [])];
 
-    const deps = createAiCoreWorkspaceDeps();
+    const deps = createWorkspaceDeps();
     const { readFileImpl, writeFileImpl, applyPatchImpl } =
       createWorkspaceToolImpls(deps);
 
@@ -27,26 +24,22 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
     const totalTasks = tasks.length;
 
     if (totalTasks > 0) {
-      deps.logger.status(`AI: Starting implementation (${totalTasks} tasks)`, {
-        phase: "ai_codegen",
-        iteration,
-        progress: { current: 0, total: totalTasks, unit: "tasks" },
-      });
+      await core.streamLog(
+        `AI: Starting implementation (${totalTasks} tasks)`,
+        "step_started" as any,
+      );
     }
 
     let taskIndex = 0;
     for (const task of tasks) {
       taskIndex += 1;
-      deps.logger.status(
+      await core.streamLog(
         `AI: Implementing task ${taskIndex}/${totalTasks} — “${task.description}”`,
-        {
-          phase: "ai_codegen",
-          iteration,
-          progress: { current: taskIndex, total: totalTasks, unit: "tasks" },
-        },
+        "step_started" as any,
       );
+
       const taskStartedAt = Date.now();
-      const codegenIndex = await buildCodegenIndex();
+      const codegenIndex = await core.buildCodegenIdx();
       if (!codegenIndex) throw new Error("Could not build codegen index");
 
       const targetSnapshots: Array<{ path: string; content: string }> = [];
@@ -82,12 +75,10 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
 
       await withStatusHeartbeat(
         () =>
-          runToolLoop({
-            initialContents: [{ role: "user", parts: [{ text: prompt }] }],
-            tools: codegenTools(),
-            aiCall: aiResponse as any,
-            logger: deps.logger,
-            handlers: {
+          core.runAiFlow(
+            [{ role: "user", parts: [{ text: prompt }] }],
+            codegenTools(),
+            {
               read_file: async (args) => {
                 const path = String(args.path ?? "");
                 const startLine =
@@ -95,7 +86,9 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
                     ? undefined
                     : Number(args.start_line);
                 const endLine =
-                  args.end_line === undefined ? undefined : Number(args.end_line);
+                  args.end_line === undefined
+                    ? undefined
+                    : Number(args.end_line);
 
                 const content = await readFileImpl(path, startLine, endLine);
                 return { path, content };
@@ -107,46 +100,7 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
               },
               apply_patch: async (args) => {
                 const patchString = String(args.patch_string ?? "");
-                const result = await applyPatchImpl(patchString);
-
-                if ((result as any)?.success !== false) return result;
-
-                const error = String((result as any)?.error ?? "");
-                const filePathMatches = Array.from(
-                  error.matchAll(
-                    /(?:Update|Add|Delete) File failed for "([^"]+)"/g,
-                  ),
-                ).map((m) => m[1]);
-
-                const uniquePaths = Array.from(new Set(filePathMatches)).slice(
-                  0,
-                  3,
-                );
-                const debugFiles: Array<{ path: string; head: string }> = [];
-
-                for (const filePath of uniquePaths) {
-                  try {
-                    const head = await readFileImpl(filePath, 1, 200);
-                    debugFiles.push({ path: filePath, head });
-                  } catch (err) {
-                    const message =
-                      err instanceof Error ? err.message : String(err);
-                    debugFiles.push({
-                      path: filePath,
-                      head: `read_file failed: ${message}`,
-                    });
-                  }
-                }
-
-                return {
-                  ...result,
-                  debug: {
-                    files: debugFiles,
-                    hint:
-                      "apply_patch failed because the expected context didn't match the current file. " +
-                      "Regenerate the patch from the snapshots above; for large rewrites, use Delete+Add instead of Update.",
-                  },
-                };
+                return await applyPatchImpl(patchString);
               },
               submit_codegen_done: async (args) => {
                 return {
@@ -155,17 +109,12 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
                 };
               },
             },
-            maxSteps: 25,
-            terminalToolNames: ["submit_codegen_done"],
-            applyPatchAutoRetryMax: 2,
-          }),
+            25,
+            ["submit_codegen_done"],
+          ),
         {
           intervalMs: 30_000,
-          meta: {
-            phase: "ai_codegen",
-            iteration,
-            progress: { current: taskIndex, total: totalTasks, unit: "tasks" },
-          },
+          eventType: "step_started",
           message: (elapsedMs) =>
             `AI: Implementing task ${taskIndex}/${totalTasks} — “${task.description}” (${formatDurationMs(
               elapsedMs,
@@ -178,16 +127,11 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
       }
 
       const taskElapsedMs = Date.now() - taskStartedAt;
-      deps.logger.status(
+      await core.streamLog(
         `AI: Done task ${taskIndex}/${totalTasks} (${formatDurationMs(taskElapsedMs)})`,
-        {
-          phase: "ai_codegen",
-          iteration,
-          elapsedMs: taskElapsedMs,
-          progress: { current: taskIndex, total: totalTasks, unit: "tasks" },
-        },
+        "step_finished" as any,
       );
-      deps.logger.info("Completed planner task", {
+      console.log("Completed planner task", {
         iteration,
         taskIndex,
         totalTasks,

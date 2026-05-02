@@ -1,14 +1,9 @@
-import { FunctionCallingConfigMode } from "@google/genai";
-import {
-  createWorkspaceToolImpls,
-  plannerTools,
-  runToolLoop,
-} from "qwintly-ai-core";
 import { ProjectRequestType } from "../../../data/project.constants.js";
-import { aiResponse } from "../../../infra/ai/gemini.client.js";
-import { PlannerIndex } from "../../../types/index/index.types.js";
-import { logger } from "../../logger/logger.service.js";
-import { createAiCoreWorkspaceDeps } from "../helpers/aiCoreDeps.js";
+import { PlannerIndex } from "@vedangiitb/qwintly-core";
+import { getQwintlyCore } from "../../core/qwintlyCore.service.js";
+import { createWorkspaceToolImpls } from "@vedangiitb/qwintly-core";
+import { createWorkspaceDeps } from "./workspaceDeps.service.js";
+import { plannerTools } from "@vedangiitb/qwintly-core";
 import { planNodePrompt } from "../prompts/planNodePrompt.js";
 import { BuilderNode } from "./createBuilderGraph.js";
 import {
@@ -21,8 +16,11 @@ export function makePlanNode(
   requestType: string,
 ): BuilderNode {
   return async (state) => {
+    const core = await getQwintlyCore();
     const isNewProject = requestType === ProjectRequestType.NEW;
-    logger.status("AI: Generating plan…", { phase: "ai_plan" });
+
+    await core.streamLog("AI: Generating plan...", "step_started" as any);
+
     const prompt = planNodePrompt({
       planTasks: state.planTasks ?? [],
       collectedContext: state.collectedContext,
@@ -30,16 +28,14 @@ export function makePlanNode(
       isNewProject,
     });
 
-    const deps = createAiCoreWorkspaceDeps();
+    const deps = createWorkspaceDeps();
     const { readFileImpl, searchImpl, listDirImpl } =
       createWorkspaceToolImpls(deps);
 
-    const result = await runToolLoop({
-      initialContents: [{ role: "user", parts: [{ text: prompt }] }],
-      tools: plannerTools(),
-      aiCall: aiResponse as any,
-      logger: deps.logger,
-      handlers: {
+    const result = await core.runAiFlow(
+      [{ role: "user", parts: [{ text: prompt }] }],
+      plannerTools(),
+      {
         read_file: async (args) => {
           const path = String(args.path ?? "");
           const startLine =
@@ -66,28 +62,24 @@ export function makePlanNode(
           return { success: true, count: tasks.length };
         },
       },
-      toolCallingMode: FunctionCallingConfigMode.ANY,
-      terminalToolNames: ["submit_planner_tasks"],
-      maxSteps: 25,
-    });
+      25,
+      ["submit_planner_tasks"],
+    );
 
     const plannerTasks =
       result.terminalCall?.name === "submit_planner_tasks"
         ? parsePlannerTasksUnknown(result.terminalCall.args.planner_tasks)
         : parsePlannerTasksJson(result.finalText);
 
-    logger.status(`AI: Plan ready (${plannerTasks.length} tasks)`, {
-      phase: "ai_plan",
-      progress: {
-        current: plannerTasks.length,
-        total: plannerTasks.length,
-        unit: "tasks",
-      },
-    });
-    logger.info("Planner tasks produced", {
+    await core.streamLog(
+      `AI: Plan ready (${plannerTasks.length} tasks)`,
+      "step_finished" as any,
+    );
+    console.log("Planner tasks produced", {
       count: plannerTasks.length,
       requestType,
     });
+
     return { plannerTasks };
   };
 }
