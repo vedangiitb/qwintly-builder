@@ -6,6 +6,8 @@ Create a simple homepage with a heading and a button centered on screen.
 
 OUTPUT (page.config.ts):
 
+import type { BuilderElement } from "@/types/elements";
+
 export const config = {
   elements: [
     {
@@ -17,18 +19,18 @@ export const config = {
           id: "heading",
           type: "text",
           props: { text: "Welcome to the app" },
-          className: "text-3xl font-semibold"
+          className: "text-3xl font-semibold",
         },
         {
           id: "cta",
           type: "button",
           props: { text: "Get Started" },
-          className: "px-4 py-2 bg-black text-white rounded-md"
-        }
-      ]
-    }
-  ]
-};`,
+          className: "px-4 py-2 bg-black text-white rounded-md",
+        },
+      ],
+    },
+  ],
+} satisfies { elements: BuilderElement[] };`,
 
   `
 ### Example 2 — Input with button row
@@ -37,6 +39,8 @@ USER TASK:
 Create a bottom input bar with an input and send button.
 
 OUTPUT (page.config.ts):
+
+import type { BuilderElement } from "@/types/elements";
 
 export const config = {
   elements: [
@@ -54,20 +58,20 @@ export const config = {
               id: "input",
               type: "input",
               props: { placeholder: "Type a message..." },
-              className: "flex-1 border rounded px-3 py-2"
+              className: "flex-1 border rounded px-3 py-2",
             },
             {
               id: "send",
               type: "button",
               props: { text: "Send" },
-              className: "bg-black text-white px-4 py-2 rounded"
-            }
-          ]
-        }
-      ]
-    }
-  ]
-};
+              className: "bg-black text-white px-4 py-2 rounded",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+} satisfies { elements: BuilderElement[] };
 `,
   `
 ### Example 3 — Navigation link
@@ -76,6 +80,8 @@ USER TASK:
 Create a simple page with a link to another page.
 
 OUTPUT (page.config.ts):
+
+import type { BuilderElement } from "@/types/elements";
 
 export const config = {
   elements: [
@@ -89,14 +95,15 @@ export const config = {
           type: "link",
           props: {
             href: "/about",
-            text: "Go to About"
+            text: "Go to About",
           },
-          className: "text-blue-600 underline"
-        }
-      ]
-    }
-  ]
-};`,
+          className: "text-blue-600 underline",
+        },
+      ],
+    },
+  ],
+} satisfies { elements: BuilderElement[] };`,
 ];
 
 export const codegenExamples = examples.join("\n");
+

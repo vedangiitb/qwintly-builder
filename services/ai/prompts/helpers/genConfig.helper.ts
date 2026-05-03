@@ -110,7 +110,17 @@ export const configSchema = mdSection(
   `
 Each \`page.config.ts\` MUST export:
 
-export const config = { elements: BuilderElement[] }
+import type { BuilderElement } from "@/types/elements";
+
+export const config = {
+  elements: [
+    // ...
+  ],
+} satisfies { elements: BuilderElement[] };
+
+CRITICAL:
+- The \`satisfies { elements: BuilderElement[] }\` clause is a strict requirement when writing \`page.config.ts\`.
+- If you omit it, the build will fail due to type widening (e.g., \`type: string\` instead of a valid ElementType union).
 
 Canonical types:
 export type ElementType =
@@ -188,16 +198,18 @@ export const validOutput = mdSection(
   "Minimum Valid Output for page.config.ts",
   `
 At least one visible UI element in page.config.ts:
-{
+import type { BuilderElement } from "@/types/elements";
+
+export const config = {
   elements: [
     {
       id: "root",
       type: "div",
       className: "p-4",
-      children: [{ id: "text-1", type: "text", props: { text: "Hello world" } }]
-    }
-  ]
-}
+      children: [{ id: "text-1", type: "text", props: { text: "Hello world" } }],
+    },
+  ],
+} satisfies { elements: BuilderElement[] };
   `.trim(),
 );
 

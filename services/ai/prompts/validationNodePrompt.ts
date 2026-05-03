@@ -49,6 +49,17 @@ Provide precise, step-by-step instructions for a code-generation agent; ensure t
     plannerObjectives("validator"),
 
     mdSection(
+      "page.config.ts Type Requirement (CRITICAL)",
+      `
+If any fix touches a \`page.config.ts\` file, the plan MUST require:
+- \`import type { BuilderElement } from "@/types/elements";\`
+- \`export const config = { ... } satisfies { elements: BuilderElement[] };\`
+
+Omitting the \`satisfies\` clause widens types (e.g., \`type: string\`) and can cause TypeScript build failures.
+      `.trim(),
+    ),
+
+    mdSection(
       "Inputs (Authoritative)",
       `
 Validation Errors:
