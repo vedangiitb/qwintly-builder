@@ -13,11 +13,11 @@ OUTPUT (submit_planner_tasks):
       "targets": ["app/pricing/page.tsx"]
     },
     {
-      "description": "Create app/pricing/page.config.ts exporting { elements: BuilderElement[] }. Include a root div with a hero section (headline + supporting text), a simple 3-item feature row, and a CTA button. Use only supported element types and Tailwind classes; no JSX in config.",
+      "description": "Create app/pricing/page.config.ts. It MUST include: import type { BuilderElement } from \"@/types/elements\"; and export: export const config = { ... } satisfies { elements: BuilderElement[] }; (build will fail if satisfies is missing). Include a root div with a hero section (headline + supporting text), a simple 3-item feature row, and a CTA button. Use only supported element types and Tailwind classes; no JSX in config.",
       "targets": ["app/pricing/page.config.ts"]
     },
     {
-      "description": "Update app/page.config.ts to add a small top nav row containing a link element to /pricing (text: Pricing). Keep existing page content intact; minimal diff; ensure ids remain unique.",
+      "description": "Update app/page.config.ts to add a small top nav row containing a link element to /pricing (text: Pricing). Preserve (or add, if missing) satisfies { elements: BuilderElement[] } on the exported config (build will fail otherwise). Keep existing page content intact; minimal diff; ensure ids remain unique.",
       "targets": ["app/page.config.ts"]
     }
   ]
@@ -38,11 +38,11 @@ OUTPUT (submit_planner_tasks):
       "targets": ["app/page.config.ts"]
     },
     {
-      "description": "Update app/page.config.ts by adding a new div child under root with id 'features-section'. Inside it, create a simple 3-column grid of feature cards; each card should include an icon element (lucide name via props.name), a text heading, and a short supporting text. Keep the tree shallow and use Tailwind for spacing/typography.",
+      "description": "Update app/page.config.ts by adding a new div child under root with id 'features-section'. Ensure the exported config preserves (or adds, if missing) satisfies { elements: BuilderElement[] } (build will fail otherwise). Inside it, create a simple 3-column grid of feature cards; each card should include an icon element (lucide name via props.name), a text heading, and a short supporting text. Keep the tree shallow and use Tailwind for spacing/typography.",
       "targets": ["app/page.config.ts"]
     },
     {
-      "description": "Update app/page.config.ts by adding a footer-section at the bottom with two link elements: one to /about and one to /contact. Use clear link text and basic styling (e.g., underline + muted color).",
+      "description": "Update app/page.config.ts by adding a footer-section at the bottom with two link elements: one to /about and one to /contact. Ensure the exported config preserves (or adds, if missing) satisfies { elements: BuilderElement[] } (build will fail otherwise). Use clear link text and basic styling (e.g., underline + muted color).",
       "targets": ["app/page.config.ts"]
     }
   ]
@@ -64,7 +64,7 @@ OUTPUT (submit_planner_tasks):
       "targets": ["app/contact/page.tsx"]
     },
     {
-      "description": "Create app/contact/page.config.ts exporting { elements }. Build a visible form layout: heading text, two input elements (placeholders: Name, Email; set email input props.type='email'), one textarea (placeholder: Message), and a submit button. Use simple spacing and borders via Tailwind; do not generate empty wrappers.",
+      "description": "Create app/contact/page.config.ts. It MUST include: import type { BuilderElement } from \"@/types/elements\"; and export: export const config = { ... } satisfies { elements: BuilderElement[] }; (build will fail if satisfies is missing). Build a visible form layout: heading text, two input elements (placeholders: Name, Email; set email input props.type='email'), one textarea (placeholder: Message), and a submit button. Use simple spacing and borders via Tailwind; do not generate empty wrappers.",
       "targets": ["app/contact/page.config.ts"]
     },
     {
@@ -72,11 +72,11 @@ OUTPUT (submit_planner_tasks):
       "targets": ["app/contact/thanks/page.tsx"]
     },
     {
-      "description": "Create app/contact/thanks/page.config.ts exporting { elements } with a short confirmation message and a link back to /. Keep it visually clear (e.g., centered container with padding).",
+      "description": "Create app/contact/thanks/page.config.ts. It MUST include: import type { BuilderElement } from \"@/types/elements\"; and export: export const config = { ... } satisfies { elements: BuilderElement[] }; (build will fail if satisfies is missing). Include a short confirmation message and a link back to /. Keep it visually clear (e.g., centered container with padding).",
       "targets": ["app/contact/thanks/page.config.ts"]
     },
     {
-      "description": "Update app/page.config.ts to add a link element pointing to /contact with text 'Contact'. Place it in an existing header/nav area if present; otherwise add a minimal nav row at the top of root.",
+      "description": "Update app/page.config.ts to add a link element pointing to /contact with text 'Contact'. Ensure the exported config preserves (or adds, if missing) satisfies { elements: BuilderElement[] } (build will fail otherwise). Place it in an existing header/nav area if present; otherwise add a minimal nav row at the top of root.",
       "targets": ["app/page.config.ts"]
     }
   ]

@@ -17,7 +17,7 @@ OUTPUT (submit_planner_tasks):
 {
   "planner_tasks": [
     {
-      "description": "Update app/page.config.ts to export exactly: export const config = { elements: BuilderElement[] }. Ensure the top-level shape is { elements: [...] } (not element/children). Preserve existing UI intent where possible; minimal diff.",
+      "description": "Update app/page.config.ts to export config with strict typing: add import type { BuilderElement } from \"@/types/elements\"; and ensure export const config = { ... } satisfies { elements: BuilderElement[] };. Ensure the top-level shape is { elements: [...] } (not element/children). Preserve existing UI intent where possible; minimal diff. Build will fail if satisfies is missing.",
       "targets": ["app/page.config.ts"]
     },
     {
@@ -54,7 +54,7 @@ OUTPUT (submit_planner_tasks):
       "targets": ["app/about/page.tsx"]
     },
     {
-      "description": "Create app/about/page.config.ts exporting { elements }. Include at least one visible text element (e.g., heading + short paragraph) under a root div with reasonable Tailwind spacing.",
+      "description": "Create app/about/page.config.ts with strict typing: import type { BuilderElement } from \"@/types/elements\"; and export const config = { ... } satisfies { elements: BuilderElement[] }; (build will fail if satisfies is missing). Include at least one visible text element (e.g., heading + short paragraph) under a root div with reasonable Tailwind spacing.",
       "targets": ["app/about/page.config.ts"]
     },
   ]
@@ -88,6 +88,30 @@ OUTPUT (submit_planner_tasks):
     {
       "description": "Quick pass in app/landing/page.config.ts to remove any empty div wrappers and fix obvious Tailwind typos introduced during edits; keep the element tree shallow and purposeful.",
       "targets": ["app/landing/page.config.ts"]
+    }
+  ]
+}`,
+
+  `
+### Example 4 - Fix TS2322 caused by widened config types (missing satisfies)
+
+VALIDATION ERRORS (input):
+- Type: typescript
+  File: app/page.tsx
+  Message: app/page.tsx(5,65): error TS2322: Type '{ id: string; type: string; className: string; children: ({ id: string; type: string; props: { text: string; }; className: string; children?: undefined; } | { id: string; type: string; className: string; children: { ...; }[]; props?: undefined; })[]; }' is not assignable to type 'BuilderElement'.
+    Types of property 'type' are incompatible.
+      Type 'string' is not assignable to type '\"div\" | \"text\" | \"fragment\" | \"image\" | \"button\" | \"input\" | \"textarea\" | \"link\" | \"icon\"'.
+
+FIX HISTORY (input):
+- File: app/page.tsx
+  Fix Attempted: "Tried casting to any in page.tsx" (should not do this).
+
+OUTPUT (submit_planner_tasks):
+{
+  "planner_tasks": [
+    {
+      "description": "Inspect app/page.config.ts and ensure the exported config is strictly typed to prevent type widening: add import type { BuilderElement } from \"@/types/elements\"; and end the export with } satisfies { elements: BuilderElement[] };. Do not add casts/any in page.tsx; keep page.tsx using the shared renderer pattern.",
+      "targets": ["app/page.config.ts"]
     }
   ]
 }`,

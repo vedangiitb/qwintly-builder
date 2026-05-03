@@ -32,6 +32,17 @@ ${projectStateNote(isNewProject, "planner")}
     renderUiConstraints("planner"),
 
     mdSection(
+      "page.config.ts Type Requirement (CRITICAL)",
+      `
+Whenever a planner task involves creating or editing any \`page.config.ts\`, the plan MUST explicitly instruct the codegen agent to export config with:
+- \`import type { BuilderElement } from "@/types/elements";\`
+- \`export const config = { ... } satisfies { elements: BuilderElement[] };\`
+
+This is a strict requirement; the build will fail if \`satisfies { elements: BuilderElement[] }\` is missing.
+      `.trim(),
+    ),
+
+    mdSection(
       "Inputs (Authoritative)",
       [
         jsonBlock("Plan Tasks", planTasks ?? []),
