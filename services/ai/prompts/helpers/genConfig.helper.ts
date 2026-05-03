@@ -18,58 +18,81 @@ Responsibilities:
 
 Rendering sketch (for understanding only; do not copy into page files):
 // lib/renderer/RenderElement.tsx
-export function RenderElement({ el }: { el: BuilderElement }) {
+export type RenderContext = {
+  onClick: <T extends Element = HTMLElement>(action: OnClickAction) => MouseEventHandler<T>;
+};
+
+export function RenderElement({ el, ctx }: { el: BuilderElement; ctx?: RenderContext }) {
   if (el.visible === false) return null;
+  const resolvedCtx = ctx ?? /* default ctx uses next/router */ ({} as RenderContext);
   const renderer = registry[el.type];
-  return renderer(el);
+  return renderer(el, resolvedCtx);
 }
 
 // lib/renderer/registry.tsx
 export const registry: Partial<Record<ElementType, ElementRenderer>> = {
-  fragment: (el) => <>{renderChildren(el.children)}</>,
-  div: (el) => (
-    <div id={el.id} className={twMerge(el.className)}>
+  fragment: (el, ctx) => <>{renderChildren(el.children, ctx)}</>,
+  div: (el, ctx) => (
+    <div
+      id={el.id}
+      className={twMerge(el.className)}
+      style={el.props?.style}
+      onClick={el.props?.onClick ? ctx.onClick(el.props.onClick) : undefined}
+    >
       {renderChildren(el.children)}
     </div>
   ),
-  text: (el) => (
-    <p id={el.id} className={twMerge(el.className)}>
+  text: (el, ctx) => (
+    <p
+      id={el.id}
+      className={twMerge(el.className)}
+      style={el.props?.style}
+      onClick={el.props?.onClick ? ctx.onClick(el.props.onClick) : undefined}
+    >
       {el.props?.text}
     </p>
   ),
-  image: (el) => {
+  image: (el, ctx) => {
     if (!el.props?.src) return null;
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
         id={el.id}
         className={twMerge(el.className)}
+        style={el.props?.style}
+        onClick={el.props?.onClick ? ctx.onClick(el.props.onClick) : undefined}
         src={el.props.src}
         alt={el.props.alt ?? ""}
       />
     );
   },
-  input: (el) => (
+  input: (el, ctx) => (
     <input
       id={el.id}
       className={twMerge(el.className)}
+      style={el.props?.style}
+      onClick={el.props?.onClick ? ctx.onClick(el.props.onClick) : undefined}
       placeholder={el.props?.placeholder}
       type={el.props?.type || "text"}
       defaultValue={el.props?.value}
     />
   ),
-  textarea: (el) => (
+  textarea: (el, ctx) => (
     <textarea
       id={el.id}
       className={twMerge(el.className)}
+      style={el.props?.style}
+      onClick={el.props?.onClick ? ctx.onClick(el.props.onClick) : undefined}
       placeholder={el.props?.placeholder}
       defaultValue={el.props?.value}
     />
   ),
-  link: (el) => (
+  link: (el, ctx) => (
     <a
       id={el.id}
       className={twMerge(el.className)}
+      style={el.props?.style}
+      onClick={el.props?.onClick ? ctx.onClick(el.props.onClick) : undefined}
       href={el.props?.href ?? "#"}
       target={el.props?.target}
       rel={el.props?.rel}
@@ -77,7 +100,7 @@ export const registry: Partial<Record<ElementType, ElementRenderer>> = {
       {el.children?.length ? renderChildren(el.children) : el.props?.text}
     </a>
   ),
-  icon: (el) => {
+  icon: (el, ctx) => {
     const iconName = el.props?.name ?? el.meta?.name;
     if (!iconName) return null;
 
@@ -94,8 +117,13 @@ export const registry: Partial<Record<ElementType, ElementRenderer>> = {
       />
     );
   },
-  button: (el) => (
-    <button id={el.id} className={twMerge(el.className)}>
+  button: (el, ctx) => (
+    <button
+      id={el.id}
+      className={twMerge(el.className)}
+      style={el.props?.style}
+      onClick={el.props?.onClick ? ctx.onClick(el.props.onClick) : undefined}
+    >
       {el.children?.length ? renderChildren(el.children) : el.props?.text}
     </button>
   ),
@@ -134,10 +162,18 @@ export type ElementType =
   | "link"
   | "icon";
 
+export type OnClickAction =
+  | { kind: "route"; href: string; replace?: boolean }
+  | { kind: "back" }
+  | { kind: "reload" }
+  | { kind: "external"; href: string; newTab?: boolean };
+
 export type BuilderElement = {
   id: string;
   type: ElementType;
   props?: {
+    style?: CSSProperties;
+    onClick?: OnClickAction;
     text?: string;
     src?: string;
     alt?: string;
@@ -156,12 +192,15 @@ export type BuilderElement = {
   visible?: boolean;
   meta?: { name?: string; locked?: boolean };
   className?: string; // Tailwind only
-};
+  };
+  DO NOT use any other than above mentioned props or ElementType, as it will cause build failures.
 
 Smart conventions (recommended):
 - The top-level element SHOULD be { id: "root", type: "div", children: [...] }.
 - When a page has multiple sections, make each top-level section a div child of root with ids ending in -section (e.g., hero-section, pricing-section).
 - Use wrapper ids ending in -container when helpful (e.g., hero-container).
+- Prefer Tailwind via className. Use props.style only when necessary (and never as a substitute for layout classes).
+- Click handlers MUST be declarative via props.onClick (OnClickAction). Never embed functions in config.
   `.trim(),
 );
 

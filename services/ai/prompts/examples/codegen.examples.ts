@@ -16,6 +16,12 @@ export const config = {
       className: "h-screen flex flex-col items-center justify-center gap-4",
       children: [
         {
+          id: "logo",
+          type: "image",
+          props: { src: "/logo.svg", alt: "App logo", onClick: { kind: "route", href: "/" } },
+          className: "h-12 w-12 cursor-pointer",
+        },
+        {
           id: "heading",
           type: "text",
           props: { text: "Welcome to the app" },
@@ -24,8 +30,8 @@ export const config = {
         {
           id: "cta",
           type: "button",
-          props: { text: "Get Started" },
-          className: "px-4 py-2 bg-black text-white rounded-md",
+          props: { text: "Get Started", onClick: { kind: "route", href: "/get-started" } },
+          className: "px-4 py-2 bg-black text-white rounded-md cursor-pointer",
         },
       ],
     },
@@ -106,4 +112,3 @@ export const config = {
 ];
 
 export const codegenExamples = examples.join("\n");
-
