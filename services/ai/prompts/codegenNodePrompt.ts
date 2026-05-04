@@ -39,6 +39,7 @@ ${projectStateNote(isNewProject, "codegen")}
       `
 - If editing any \`page.tsx\`, it MUST render from config using the shared renderer; do not hardcode UI.
 - If creating or editing any \`page.config.ts\`, it MUST end with \`satisfies { elements: BuilderElement[] };\` (build will fail otherwise).
+- If adding click behavior in config, use \`props.onClick\` with an \`OnClickAction\` object (never functions).
 - Prefer minimal diffs.
 - Only touch files in task.targets unless the task explicitly requires additional existing files.
       `.trim(),

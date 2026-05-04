@@ -39,6 +39,8 @@ Whenever a planner task involves creating or editing any \`page.config.ts\`, the
 - \`export const config = { ... } satisfies { elements: BuilderElement[] };\`
 
 This is a strict requirement; the build will fail if \`satisfies { elements: BuilderElement[] }\` is missing.
+
+If the plan needs click behavior, it MUST specify declarative \`props.onClick\` actions (OnClickAction objects), not functions.
       `.trim(),
     ),
 

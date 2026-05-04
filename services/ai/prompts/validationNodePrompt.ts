@@ -56,6 +56,8 @@ If any fix touches a \`page.config.ts\` file, the plan MUST require:
 - \`export const config = { ... } satisfies { elements: BuilderElement[] };\`
 
 Omitting the \`satisfies\` clause widens types (e.g., \`type: string\`) and can cause TypeScript build failures.
+
+If a fix needs click behavior, require declarative \`props.onClick\` actions (OnClickAction objects), not functions.
       `.trim(),
     ),
 
