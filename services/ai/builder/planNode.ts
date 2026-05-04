@@ -72,8 +72,9 @@ export function makePlanNode(
         : parsePlannerTasksJson(result.finalText);
 
     await core.streamLog(
-      `AI: Plan ready (${plannerTasks.length} tasks)`,
+      `Planner agent: Planned ${plannerTasks.length} coding tasks`,
       "step_finished" as any,
+      true,
     );
     console.log("Planner tasks produced", {
       count: plannerTasks.length,

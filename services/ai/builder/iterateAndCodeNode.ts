@@ -130,6 +130,7 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
       await core.streamLog(
         `AI: Done task ${taskIndex}/${totalTasks} (${formatDurationMs(taskElapsedMs)})`,
         "step_finished" as any,
+        true,
       );
       console.log("Completed planner task", {
         iteration,

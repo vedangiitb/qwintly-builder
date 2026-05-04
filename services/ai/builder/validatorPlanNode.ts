@@ -71,7 +71,7 @@ export function makeValidatorPlanNode(
         : parsePlannerTasksJson(result.finalText);
 
     await core.streamLog(
-      `AI: Fix plan ready (${plannerTasks.length} tasks)`,
+      `AI: Fix plan ready with ${plannerTasks.length} coding tasks`,
       "step_finished" as any,
     );
 
