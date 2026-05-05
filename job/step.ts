@@ -44,6 +44,7 @@ export async function step<T>(
       await core.streamLog(
         `Done ${name} (${formatDurationMs(elapsedMs)})`,
         "step_finished" as any,
+        true,
       );
       await markStepDone(name);
       return result;
@@ -54,6 +55,7 @@ export async function step<T>(
         await core.streamLog(
           `Failed ${name} (after ${formatDurationMs(elapsedMs)}): ${reason}`,
           "step_error" as any,
+          true,
         );
         console.error(`Step failed: ${name}`, {
           attempt,

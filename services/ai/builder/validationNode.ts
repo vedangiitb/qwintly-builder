@@ -19,6 +19,7 @@ export const validationNode: BuilderNode = async () => {
     await core.streamLog(
       `Validation found ${errors.length} issue(s)`,
       "step_error" as any,
+      true,
     );
     console.warn("Validation issues found", { count: errors.length });
   }
