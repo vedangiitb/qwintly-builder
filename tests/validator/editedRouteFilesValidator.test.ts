@@ -90,6 +90,37 @@ const x = <div />;
   assert.ok(errors.some((e) => e.message.toLowerCase().includes("jsx")));
 });
 
+test("EditedRouteFilesValidator: flags invalid BuilderElement type but ignores props.type", async () => {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "qwintly-"));
+  setJobContext({ workspace } as any);
+
+  write(
+    workspace,
+    "app/t/page.config.ts",
+    `
+import type { BuilderElement } from "@/types/elements";
+
+export const config = {
+  elements: [
+    {
+      id: "root",
+      type: "div",
+      children: [
+        { id: "good-link", type: "link", props: { text: "Ok", href: "/x" } },
+        { id: "bad-link", type: "link VI", props: { text: "Bad", href: "/y" } },
+        { id: "email", type: "input", props: { type: "email", placeholder: "Email" } },
+      ],
+    },
+  ],
+} satisfies { elements: BuilderElement[] };
+    `.trim(),
+  );
+
+  const errors = await EditedRouteFilesValidator(["app/t/page.config.ts"]);
+  assert.ok(errors.some((e) => e.message.includes('type "link VI"')));
+  assert.ok(!errors.some((e) => e.message.includes('type "email"')));
+});
+
 test("EditedRouteFilesValidator: flags non-template page.tsx", async () => {
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "qwintly-"));
   setJobContext({ workspace } as any);
@@ -107,4 +138,3 @@ export default function Page() {
   const errors = await EditedRouteFilesValidator(["app/w/page.tsx"]);
   assert.ok(errors.length > 0);
 });
-
