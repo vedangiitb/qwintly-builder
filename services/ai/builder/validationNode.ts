@@ -1,27 +1,58 @@
 import { BuilderNode } from "./createBuilderGraph.js";
 import { HeuristicValidator } from "../../validator/validators/HeuristicValidator.js";
 import { NextRulesValidator } from "../../validator/validators/NextRulesValidator.js";
+import { EditedRouteFilesValidator } from "../../validator/validators/EditedRouteFilesValidator.js";
 import { getQwintlyCore } from "../../core/qwintlyCore.service.js";
 
-export const validationNode: BuilderNode = async () => {
+function formatValidationIssues(
+  errors: Array<{
+    type?: string | null;
+    filePath?: string | null;
+    message?: string | null;
+  }>,
+  limit: number,
+) {
+  const lines = errors.slice(0, limit).map((e) => {
+    const type = e.type ?? "unknown";
+    const file = e.filePath ?? "unknown";
+    const message = (e.message ?? "").trim() || "(no message)";
+    return `- [${type}] ${file}: ${message}`;
+  });
+
+  const remaining = Math.max(0, errors.length - limit);
+  if (remaining > 0) lines.push(`- ...and ${remaining} more`);
+  return lines.join("\n");
+}
+
+export const validationNode: BuilderNode = async (state) => {
   const core = await getQwintlyCore();
   await core.streamLog("Validating project...", "step_started" as any);
 
-  const [nextErrors, heuristicErrors] = await Promise.all([
+  const [nextErrors, heuristicErrors, editedRouteErrors] = await Promise.all([
     NextRulesValidator(),
     HeuristicValidator(),
+    EditedRouteFilesValidator(state.editedFiles ?? []),
   ]);
 
-  const errors = [...nextErrors, ...heuristicErrors];
+  const errors = [...nextErrors, ...heuristicErrors, ...editedRouteErrors];
   if (errors.length === 0) {
     await core.streamLog("Validation passed", "step_finished" as any);
   } else {
+    console.warn("Validation issues found", { count: errors.length, errors });
     await core.streamLog(
       `Validation found ${errors.length} issue(s)`,
       "step_error" as any,
       true,
     );
-    console.warn("Validation issues found", { count: errors.length });
+
+    const preview = formatValidationIssues(errors, 20);
+    if (preview.trim().length > 0) {
+      console.log(
+        `Validation issues (first 20):\n${preview}`,
+        "step_error" as any,
+        true,
+      );
+    }
   }
 
   return {

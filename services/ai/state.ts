@@ -12,6 +12,7 @@ export type AgentState = {
   plannerTasks: PlannerTask[];
   validationErrors: PreflightErrorList;
   validationFixHistory: ValidatorAgentHistory;
+  editedFiles: string[];
 };
 
 export const AgentStateAnnotation = Annotation.Root({
@@ -21,4 +22,5 @@ export const AgentStateAnnotation = Annotation.Root({
   plannerTasks: Annotation<PlannerTask[]>(),
   validationErrors: Annotation<PreflightErrorList>(),
   validationFixHistory: Annotation<ValidatorAgentHistory>(),
+  editedFiles: Annotation<string[]>(),
 });

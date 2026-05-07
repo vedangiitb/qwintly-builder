@@ -34,6 +34,7 @@ test("builder graph: repairs once then ends when validation passes", async () =>
     plannerTasks: [],
     validationErrors: [],
     validationFixHistory: [],
+    editedFiles: [],
   };
 
   const result = await graph.invoke(initial);
@@ -64,10 +65,10 @@ test("builder graph: stops after 3 total passes even if bugs remain", async () =
     plannerTasks: [],
     validationErrors: [],
     validationFixHistory: [],
+    editedFiles: [],
   };
 
   const result = await graph.invoke(initial);
   assert.equal(result.iteration, 3);
   assert.ok(result.validationErrors.length > 0);
 });
-

@@ -7,12 +7,19 @@ import { codegenNodePrompt } from "../prompts/codegenNodePrompt.js";
 import { BuilderNode } from "./createBuilderGraph.js";
 import { formatDurationMs } from "../../../utils/formatDuration.js";
 import { withStatusHeartbeat } from "../../../utils/withStatusHeartbeat.js";
+import {
+  extractTouchedFilesFromPatch,
+  normalizeEditedFilePath,
+} from "./applyPatchPathExtractor.js";
 
 export function makeIterateAndCodeNode(requestType: string): BuilderNode {
   return async (state) => {
     const core = await getQwintlyCore();
     const iteration = (state.iteration ?? 0) + 1;
     const history = [...(state.validationFixHistory ?? [])];
+    const editedFilesSet = new Set<string>(
+      (state.editedFiles ?? []).map(normalizeEditedFilePath),
+    );
 
     const deps = createWorkspaceDeps();
     const { readFileImpl, writeFileImpl, applyPatchImpl } =
@@ -96,10 +103,16 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
               write_file: async (args) => {
                 const path = String(args.path ?? "");
                 const content = String(args.content ?? "");
+                if (path.trim().length > 0) {
+                  editedFilesSet.add(normalizeEditedFilePath(path));
+                }
                 return await writeFileImpl(path, content);
               },
               apply_patch: async (args) => {
                 const patchString = String(args.patch_string ?? "");
+                for (const p of extractTouchedFilesFromPatch(patchString)) {
+                  if (p.trim().length > 0) editedFilesSet.add(p);
+                }
                 return await applyPatchImpl(patchString);
               },
               submit_codegen_done: async (args) => {
@@ -141,6 +154,10 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
       });
     }
 
-    return { iteration, validationFixHistory: history };
+    return {
+      iteration,
+      validationFixHistory: history,
+      editedFiles: Array.from(editedFilesSet),
+    };
   };
 }
