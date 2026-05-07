@@ -35,6 +35,7 @@ export const runBuilderAiFlow = async (
     plannerTasks: [],
     validationErrors: [],
     validationFixHistory: [],
+    editedFiles: [],
   };
 
   await core.streamLog("AI: Starting builder flow", "step_started" as any);
