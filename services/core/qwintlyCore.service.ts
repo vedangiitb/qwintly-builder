@@ -9,7 +9,7 @@ import {
 import { getKeyFromUserid } from "../byok/byok.service.js";
 
 let cachedCore: QwintlyCore | null = null;
-const GEMINI_MODEL = "gemini-2.5-flash-lite";
+const GEMINI_MODEL_DEFAULT = "gemini-2.5-flash-lite";
 
 export async function getQwintlyCore(): Promise<QwintlyCore> {
   if (cachedCore) return cachedCore;
@@ -34,7 +34,7 @@ export async function getQwintlyCore(): Promise<QwintlyCore> {
     },
     gemini: {
       apiKey: GEMINI_API_KEY,
-      ...(GEMINI_MODEL ? { model: GEMINI_MODEL } : {}),
+      ...{ model: ctx.model || GEMINI_MODEL_DEFAULT },
     },
   });
 
