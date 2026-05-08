@@ -31,6 +31,7 @@ export function createJobContext() {
   let tokenPayload: {
     userId: string;
     provider: string;
+    model: string;
     chatId: string;
     planId: string;
     requestType: string;
@@ -49,12 +50,14 @@ export function createJobContext() {
   const requestType = normalizeString(tokenPayload.requestType);
   const provider = normalizeString(tokenPayload.provider);
   const userId = normalizeString(tokenPayload.userId);
+  const model = normalizeString(tokenPayload.model);
 
   return {
     chatId: chatId,
     requestType: requestType,
     tasksPlanId: planId,
     provider: provider,
+    model: model,
     userId: userId,
     sessionId: SESSION_ID,
     workspace: `/tmp/workspace`,
