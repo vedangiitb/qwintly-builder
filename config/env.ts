@@ -2,13 +2,12 @@ import "dotenv/config";
 
 /*
  * Job context from Worker
- * SESSION_ID & JOB_TOKEN
+ * JOB_TOKEN
  *
  * Env secrets/variables
  * All others
  */
 
-export const SESSION_ID = process.env.SESSION_ID!;
 export const JOB_TOKEN = process.env.JOB_TOKEN!;
 export const SNAPSHOT_BUCKET = process.env.SNAPSHOT_BUCKET;
 export const TEMPLATE_BUCKET = process.env.TEMPLATE_BUCKET;
