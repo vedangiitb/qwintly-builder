@@ -1,13 +1,14 @@
-import { runBuilderAiFlow } from "../services/ai/graph.js";
 import { ProjectRequestType } from "../data/project.constants.js";
 import { getJobContext } from "../job/jobContext.js";
 import { step } from "../job/step.js";
+import { runBuilderAiFlow } from "../services/ai/graph.js";
+import { getQwintlyCore } from "../services/core/qwintlyCore.service.js";
+import { buildPageConfig } from "../services/pageConfig/buildPageConfig.service.js";
 import { cloneTemplate } from "../services/project/cloneTemplate.service.js";
 import { fetchProjectContext } from "../services/project/fetchProjectContext.js";
 import { fetchPlanTasks } from "../services/project/getRequest.service.js";
 import { zipProject } from "../services/project/zipProject.service.js";
 import { uploadProjectSnapshot } from "../services/snapshot/uploadSnapshot.service.js";
-import { getQwintlyCore } from "../services/core/qwintlyCore.service.js";
 
 export async function runProjectFlow() {
   const ctx = getJobContext();
@@ -47,6 +48,13 @@ export async function runProjectFlow() {
       retries: 0,
     },
   );
+
+  /*
+   * Generate Page Config
+   */
+  await step("Building Page Config", () => buildPageConfig(), {
+    retries: 1,
+  });
 
   /*
    * Generate Project Info Index
