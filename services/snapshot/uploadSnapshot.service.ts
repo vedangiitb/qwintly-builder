@@ -4,10 +4,10 @@ import { getJobContext } from "../../job/jobContext.js";
 export async function uploadProjectSnapshot() {
   const ctx = getJobContext();
   const zipPath = ctx.zipPath;
-  const chatId = ctx.chatId;
+  const sessionId = ctx.sessionId
   const bucketName = ctx.snapshotBucket;
   const projectId = ctx.projectId;
-  const destination = `projects/${chatId}.zip`;
+  const destination = `projects/${sessionId}.zip`;
   console.log(
     `Uploading project snapshot "${zipPath}" to bucket "${bucketName}" at "${destination}" (projectId="${projectId}")`,
   );

@@ -62,7 +62,7 @@ export function createJobContext() {
     userId: userId,
     sessionId: sessionId,
     workspace: `/tmp/workspace`,
-    zipPath: `/tmp/${chatId}.zip`,
+    zipPath: `/tmp/${sessionId}.zip`,
     snapshotBucket: SNAPSHOT_BUCKET,
     projectId: GCP_PROJECT_ID_QWINTLY,
     templateBucket: TEMPLATE_BUCKET,
