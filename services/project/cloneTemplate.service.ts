@@ -2,7 +2,7 @@ import {
   ProjectPathConstants,
   ProjectRequestType,
 } from "../../data/project.constants.js";
-import { createFolder,removeFolder } from "@vedangiitb/qwintly-core";
+import { createFolder, removeFolder } from "@vedangiitb/qwintly-core";
 import { extractZip } from "../../infra/fs/zipFolder.js";
 import { downloadToDestinationGCS } from "../../infra/gcs/download.js";
 import { getJobContext } from "../../job/jobContext.js";
@@ -10,19 +10,19 @@ import { getJobContext } from "../../job/jobContext.js";
 export async function cloneTemplate() {
   const ctx = getJobContext();
   const workspacePath = ctx.workspace;
-  const chatId = ctx.chatId;
+  const sessionId = ctx.sessionId;
 
   let bucketName: string;
   let zipPath: string;
   let projectId: string = ctx.projectId!;
-  const tmpZipPath = ProjectPathConstants(chatId).tmpZipPath;
+  const tmpZipPath = ProjectPathConstants(sessionId).tmpZipPath;
 
   if (ctx.requestType === ProjectRequestType.NEW) {
     bucketName = ctx.templateBucket!;
     zipPath = ProjectPathConstants("").baseTemplate;
   } else {
     bucketName = ctx.snapshotBucket!;
-    zipPath = ProjectPathConstants(chatId).snapShotPath;
+    zipPath = ProjectPathConstants(sessionId).snapShotPath;
     projectId = ctx.genSitesProjectId!;
   }
   console.log(

@@ -3,13 +3,13 @@ export const ProjectRequestType = {
   UPDATE: "update",
 } as const;
 
-export const ProjectPathConstants = (chatId: string) => {
+export const ProjectPathConstants = (sessionId: string) => {
   return {
     baseCodeIndex: "indexes/default-code_index.json",
     baseTemplate: "base-template.zip",
-    codeIndex: `indexes/code_index-${chatId}.json`,
-    tmpZipPath: `/tmp/template_${chatId}.zip`,
-    snapShotPath: `projects/${chatId}.zip`,
+    codeIndex: `indexes/code_index-${sessionId}.json`,
+    tmpZipPath: `/tmp/template_${sessionId}.zip`,
+    snapShotPath: `projects/${sessionId}.zip`,
   };
 };
 export type ProjectRequestType =
