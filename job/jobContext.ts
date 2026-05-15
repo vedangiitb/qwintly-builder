@@ -30,10 +30,11 @@ export function createJobContext() {
   let tokenPayload: {
     chatId: string;
     planId: string;
+    userId: string;
     requestType: string;
     provider: string;
     model: string;
-    userId: string;
+    prevSessionId: string;
     sessionId: string;
   };
   try {
@@ -47,22 +48,27 @@ export function createJobContext() {
 
   const chatId = normalizeString(tokenPayload.chatId);
   const planId = normalizeString(tokenPayload.planId);
+  const userId = normalizeString(tokenPayload.userId);
   const requestType = normalizeString(tokenPayload.requestType);
   const provider = normalizeString(tokenPayload.provider);
-  const userId = normalizeString(tokenPayload.userId);
   const model = normalizeString(tokenPayload.model);
+  const prevSessionId = normalizeString(tokenPayload.prevSessionId);
   const sessionId = normalizeString(tokenPayload.sessionId);
 
   return {
     chatId: chatId,
+    planId: planId,
+    userId: userId,
     requestType: requestType,
-    tasksPlanId: planId,
     provider: provider,
     model: model,
-    userId: userId,
+    prevSessionId: prevSessionId,
     sessionId: sessionId,
     workspace: `/tmp/workspace`,
     zipPath: `/tmp/${sessionId}.zip`,
+    baseTemplate: "base-template.zip",
+    tmpZipPath: `/tmp/template_${sessionId}.zip`,
+    snapShotPath: `projects/${chatId}/${sessionId}.zip`,
     snapshotBucket: SNAPSHOT_BUCKET,
     projectId: GCP_PROJECT_ID_QWINTLY,
     templateBucket: TEMPLATE_BUCKET,

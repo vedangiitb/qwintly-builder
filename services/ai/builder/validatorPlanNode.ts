@@ -1,14 +1,16 @@
-import { ValidatorIndex } from "@vedangiitb/qwintly-core";
+import {
+  createWorkspaceToolImpls,
+  plannerTools,
+  ValidatorIndex,
+  validatorPrompt,
+} from "@vedangiitb/qwintly-core";
 import { getQwintlyCore } from "../../core/qwintlyCore.service.js";
-import { createWorkspaceToolImpls } from "@vedangiitb/qwintly-core";
-import { plannerTools } from "@vedangiitb/qwintly-core";
-import { createWorkspaceDeps } from "./workspaceDeps.service.js";
-import { validationNodePrompt } from "../prompts/validationNodePrompt.js";
 import { BuilderNode } from "./createBuilderGraph.js";
 import {
   parsePlannerTasksJson,
   parsePlannerTasksUnknown,
 } from "./plannerTaskParser.js";
+import { createWorkspaceDeps } from "./workspaceDeps.service.js";
 
 export function makeValidatorPlanNode(
   validatorIndex: ValidatorIndex,
@@ -21,7 +23,7 @@ export function makeValidatorPlanNode(
       "step_started" as any,
     );
 
-    const prompt = validationNodePrompt({
+    const prompt = validatorPrompt({
       errors: state.validationErrors ?? [],
       history: state.validationFixHistory ?? [],
       validatorIndex,

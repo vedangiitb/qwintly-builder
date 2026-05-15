@@ -3,14 +3,5 @@ export const ProjectRequestType = {
   UPDATE: "update",
 } as const;
 
-export const ProjectPathConstants = (sessionId: string) => {
-  return {
-    baseCodeIndex: "indexes/default-code_index.json",
-    baseTemplate: "base-template.zip",
-    codeIndex: `indexes/code_index-${sessionId}.json`,
-    tmpZipPath: `/tmp/template_${sessionId}.zip`,
-    snapShotPath: `projects/${sessionId}.zip`,
-  };
-};
 export type ProjectRequestType =
   (typeof ProjectRequestType)[keyof typeof ProjectRequestType];

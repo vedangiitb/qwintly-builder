@@ -1,15 +1,17 @@
+import {
+  createWorkspaceToolImpls,
+  PlannerIndex,
+  plannerPrompt,
+  plannerTools,
+} from "@vedangiitb/qwintly-core";
 import { ProjectRequestType } from "../../../data/project.constants.js";
-import { PlannerIndex } from "@vedangiitb/qwintly-core";
 import { getQwintlyCore } from "../../core/qwintlyCore.service.js";
-import { createWorkspaceToolImpls } from "@vedangiitb/qwintly-core";
-import { createWorkspaceDeps } from "./workspaceDeps.service.js";
-import { plannerTools } from "@vedangiitb/qwintly-core";
-import { planNodePrompt } from "../prompts/planNodePrompt.js";
 import { BuilderNode } from "./createBuilderGraph.js";
 import {
   parsePlannerTasksJson,
   parsePlannerTasksUnknown,
 } from "./plannerTaskParser.js";
+import { createWorkspaceDeps } from "./workspaceDeps.service.js";
 
 export function makePlanNode(
   plannerIndex: PlannerIndex,
@@ -21,7 +23,7 @@ export function makePlanNode(
 
     await core.streamLog("AI: Generating plan...", "step_started" as any);
 
-    const prompt = planNodePrompt({
+    const prompt = plannerPrompt({
       planTasks: state.planTasks ?? [],
       collectedContext: state.collectedContext,
       plannerIndex,

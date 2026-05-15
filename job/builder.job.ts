@@ -30,12 +30,7 @@ export async function runBuilderJob() {
     );
     exitCode = 1;
   } finally {
-    await finishGenerationSession(
-      ctx.chatId,
-      ctx.sessionId,
-      ctx.tasksPlanId,
-      success,
-    );
+    await finishGenerationSession(ctx.sessionId, success);
     await safeExit(exitCode, exitMessage);
   }
 }

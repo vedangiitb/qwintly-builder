@@ -4,7 +4,7 @@ import { PlanTask } from "../../types/updatePlan.types.js";
 
 export async function fetchPlanTasks(): Promise<PlanTask[]> {
   const ctx = getJobContext();
-  const planId = ctx.tasksPlanId;
+  const planId = ctx.planId;
   if (!planId) {
     throw new Error("planId is required");
   }

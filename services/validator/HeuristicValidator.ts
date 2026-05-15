@@ -1,9 +1,7 @@
 import fs from "fs";
 import path from "path";
-import { getJobContext } from "../../../job/jobContext.js";
-import {
-    PreflightErrorList
-} from "../../../types/preflightError.js";
+import { getJobContext } from "../../job/jobContext.js";
+import { PreflightErrorList } from "../../types/preflightError.js";
 import { stripLeadingComments, walk } from "./NextRulesValidator.js";
 
 export const HeuristicValidator = async (): Promise<PreflightErrorList> => {

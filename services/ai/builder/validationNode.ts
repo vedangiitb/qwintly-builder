@@ -1,8 +1,7 @@
-import { BuilderNode } from "./createBuilderGraph.js";
-import { HeuristicValidator } from "../../validator/validators/HeuristicValidator.js";
-import { NextRulesValidator } from "../../validator/validators/NextRulesValidator.js";
-import { EditedRouteFilesValidator } from "../../validator/validators/EditedRouteFilesValidator.js";
 import { getQwintlyCore } from "../../core/qwintlyCore.service.js";
+import { HeuristicValidator } from "../../validator/HeuristicValidator.js";
+import { NextRulesValidator } from "../../validator/NextRulesValidator.js";
+import { BuilderNode } from "./createBuilderGraph.js";
 
 function formatValidationIssues(
   errors: Array<{
@@ -28,13 +27,12 @@ export const validationNode: BuilderNode = async (state) => {
   const core = await getQwintlyCore();
   await core.streamLog("Validating project...", "step_started" as any);
 
-  const [nextErrors, heuristicErrors, editedRouteErrors] = await Promise.all([
+  const [nextErrors, heuristicErrors] = await Promise.all([
     NextRulesValidator(),
     HeuristicValidator(),
-    EditedRouteFilesValidator(state.editedFiles ?? []),
   ]);
 
-  const errors = [...nextErrors, ...heuristicErrors, ...editedRouteErrors];
+  const errors = [...nextErrors, ...heuristicErrors];
   if (errors.length === 0) {
     await core.streamLog("Validation passed", "step_finished" as any);
   } else {
