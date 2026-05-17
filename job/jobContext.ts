@@ -4,14 +4,13 @@ import {
   GCP_PROJECT_ID_QWINTLY,
   GEN_SITES_PROJECT_ID,
   JOB_TOKEN,
-  SESSION_ID,
   SNAPSHOT_BUCKET,
   TEMPLATE_BUCKET,
 } from "../config/env.js";
 
 /*
  * Job context from Worker
- * SESSION_ID & JOB_TOKEN
+ * JOB_TOKEN
  *
  * Env secrets/variables
  * All others
@@ -29,12 +28,14 @@ export function createJobContext() {
   }
 
   let tokenPayload: {
-    userId: string;
-    provider: string;
-    model: string;
     chatId: string;
     planId: string;
+    userId: string;
     requestType: string;
+    provider: string;
+    model: string;
+    prevSessionId: string;
+    sessionId: string;
   };
   try {
     tokenPayload = jwt.verify(
@@ -47,21 +48,28 @@ export function createJobContext() {
 
   const chatId = normalizeString(tokenPayload.chatId);
   const planId = normalizeString(tokenPayload.planId);
+  const userId = normalizeString(tokenPayload.userId);
   const requestType = normalizeString(tokenPayload.requestType);
   const provider = normalizeString(tokenPayload.provider);
-  const userId = normalizeString(tokenPayload.userId);
   const model = normalizeString(tokenPayload.model);
+  const prevSessionId = normalizeString(tokenPayload.prevSessionId);
+  const sessionId = normalizeString(tokenPayload.sessionId);
 
   return {
     chatId: chatId,
+    planId: planId,
+    userId: userId,
     requestType: requestType,
-    tasksPlanId: planId,
     provider: provider,
     model: model,
-    userId: userId,
-    sessionId: SESSION_ID,
+    prevSessionId: prevSessionId,
+    sessionId: sessionId,
     workspace: `/tmp/workspace`,
-    zipPath: `/tmp/${chatId}.zip`,
+    zipPath: `/tmp/${sessionId}.zip`,
+    baseTemplate: "base-template.zip",
+    tmpZipPath: `/tmp/template_${sessionId}.zip`,
+    snapShotPath: `projects/${chatId}/${prevSessionId}.zip`,
+    snapShotuploadPath: `projects/${chatId}/${sessionId}.zip`,
     snapshotBucket: SNAPSHOT_BUCKET,
     projectId: GCP_PROJECT_ID_QWINTLY,
     templateBucket: TEMPLATE_BUCKET,

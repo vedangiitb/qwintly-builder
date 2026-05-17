@@ -1,16 +1,16 @@
+import {
+  codegenPrompt,
+  codegenTools,
+  createWorkspaceToolImpls,
+  EVENT_TYPES,
+} from "@vedangiitb/qwintly-core";
 import { ProjectRequestType } from "../../../data/project.constants.js";
-import { getQwintlyCore } from "../../core/qwintlyCore.service.js";
-import { createWorkspaceToolImpls } from "@vedangiitb/qwintly-core";
-import { codegenTools } from "@vedangiitb/qwintly-core";
-import { createWorkspaceDeps } from "./workspaceDeps.service.js";
-import { codegenNodePrompt } from "../prompts/codegenNodePrompt.js";
-import { BuilderNode } from "./createBuilderGraph.js";
 import { formatDurationMs } from "../../../utils/formatDuration.js";
 import { withStatusHeartbeat } from "../../../utils/withStatusHeartbeat.js";
-import {
-  extractTouchedFilesFromPatch,
-  normalizeEditedFilePath,
-} from "./applyPatchPathExtractor.js";
+import { getQwintlyCore } from "../../core/qwintlyCore.service.js";
+import { normalizeEditedFilePath } from "./applyPatchPathExtractor.js";
+import { BuilderNode } from "./createBuilderGraph.js";
+import { createWorkspaceDeps } from "./workspaceDeps.service.js";
 
 export function makeIterateAndCodeNode(requestType: string): BuilderNode {
   return async (state) => {
@@ -22,8 +22,14 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
     );
 
     const deps = createWorkspaceDeps();
-    const { readFileImpl, writeFileImpl, applyPatchImpl } =
-      createWorkspaceToolImpls(deps);
+    const {
+      readFileImpl,
+      createNewRouteImpl,
+      insertElementImpl,
+      deleteElementImpl,
+      updatePropsImpl,
+      updateClassNameImpl,
+    } = createWorkspaceToolImpls(deps);
 
     const isNewProject = requestType === ProjectRequestType.NEW;
 
@@ -33,7 +39,7 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
     if (totalTasks > 0) {
       await core.streamLog(
         `AI: Starting implementation (${totalTasks} tasks)`,
-        "step_started" as any,
+        EVENT_TYPES.STEP_STARTED,
       );
     }
 
@@ -49,36 +55,12 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
       const codegenIndex = await core.buildCodegenIdx();
       if (!codegenIndex) throw new Error("Could not build codegen index");
 
-      const targetSnapshots: Array<{ path: string; content: string }> = [];
-      for (const target of task.targets ?? []) {
-        try {
-          const content = await readFileImpl(target, 1, 200);
-          targetSnapshots.push({ path: target, content });
-        } catch (err) {
-          const message = err instanceof Error ? err.message : String(err);
-          targetSnapshots.push({
-            path: target,
-            content: `read_file failed: ${message}`,
-          });
-        }
-      }
-
-      const snapshotBlock =
-        targetSnapshots.length > 0
-          ? `\n\nTARGET FILE SNAPSHOTS (first 200 lines):\n${targetSnapshots
-              .map(
-                (s) =>
-                  `--- ${s.path} ---\n${s.content}\n--- end ${s.path} ---\n`,
-              )
-              .join("\n")}`
-          : "";
-
-      const prompt = codegenNodePrompt({
+      const prompt = codegenPrompt({
         task,
         codegenIndex,
         collectedContext: state.collectedContext,
         isNewProject,
-      }).concat(snapshotBlock);
+      });
 
       await withStatusHeartbeat(
         () =>
@@ -100,20 +82,50 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
                 const content = await readFileImpl(path, startLine, endLine);
                 return { path, content };
               },
-              write_file: async (args) => {
-                const path = String(args.path ?? "");
-                const content = String(args.content ?? "");
-                if (path.trim().length > 0) {
-                  editedFilesSet.add(normalizeEditedFilePath(path));
-                }
-                return await writeFileImpl(path, content);
+              create_new_route: async (args) => {
+                const parentRoute = String(args.parent_route ?? "");
+                const routeName = String(args.route_name ?? "");
+                const result = await createNewRouteImpl(parentRoute, routeName);
+                return { result };
               },
-              apply_patch: async (args) => {
-                const patchString = String(args.patch_string ?? "");
-                for (const p of extractTouchedFilesFromPatch(patchString)) {
-                  if (p.trim().length > 0) editedFilesSet.add(p);
-                }
-                return await applyPatchImpl(patchString);
+              insert_element: async (args) => {
+                const route = String(args.route ?? "");
+                const parent_id = String(args.parent_id ?? "");
+                const element: any = args.element;
+                const result = await insertElementImpl(
+                  route,
+                  parent_id,
+                  element,
+                );
+                return { result };
+              },
+              delete_element: async (args) => {
+                const route = String(args.route ?? "");
+                const element_id = String(args.element_id ?? "");
+                const result = await deleteElementImpl(route, element_id);
+                return { result };
+              },
+              update_props: async (args) => {
+                const route = String(args.route ?? "");
+                const element_id = String(args.element_id ?? "");
+                const props: any = args.props;
+                const result = await updatePropsImpl({
+                  route,
+                  element_id,
+                  ...props,
+                });
+                return { result };
+              },
+              update_class_name: async (args) => {
+                const route = String(args.route ?? "");
+                const element_id = String(args.element_id ?? "");
+                const class_name = String(args.class_name ?? "");
+                const result = await updateClassNameImpl(
+                  route,
+                  element_id,
+                  class_name,
+                );
+                return { result };
               },
               submit_codegen_done: async (args) => {
                 return {
@@ -122,7 +134,7 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
                 };
               },
             },
-            25,
+            30,
             ["submit_codegen_done"],
           ),
         {
@@ -142,7 +154,7 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
       const taskElapsedMs = Date.now() - taskStartedAt;
       await core.streamLog(
         `AI: Done task ${taskIndex}/${totalTasks} (${formatDurationMs(taskElapsedMs)})`,
-        "step_finished" as any,
+        EVENT_TYPES.STEP_FINISHED,
         true,
       );
       console.log("Completed planner task", {

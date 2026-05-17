@@ -1,5 +1,5 @@
-import { getJobContext } from "../../../job/jobContext.js";
-import { PreflightErrorList } from "../../../types/preflightError.js";
+import { getJobContext } from "../../job/jobContext.js";
+import { PreflightErrorList } from "../../types/preflightError.js";
 import fs from "fs";
 import path from "path";
 const HOOK_REGEX =
@@ -61,7 +61,7 @@ export const NextRulesValidator = async (): Promise<PreflightErrorList> => {
     ) {
       if (
         !/\bexport\s+async\s+function\s+(GET|POST|PUT|DELETE|PATCH)\b/.test(
-          code
+          code,
         )
       ) {
         errors.push({

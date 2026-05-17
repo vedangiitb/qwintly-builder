@@ -1,11 +1,13 @@
 import { QwintlyCore } from "@vedangiitb/qwintly-core";
-import { getJobContext } from "../../job/jobContext.js";
 import {
   SUPABASE_ENDPOINT,
   SUPABASE_SECRET,
+  UNSPLASH_ACCESS_KEY,
+  UNSPLASH_URL,
   UPSTASH_TOKEN,
   UPSTASH_URL,
 } from "../../config/env.js";
+import { getJobContext } from "../../job/jobContext.js";
 import { getKeyFromUserid } from "../byok/byok.service.js";
 
 let cachedCore: QwintlyCore | null = null;
@@ -35,6 +37,10 @@ export async function getQwintlyCore(): Promise<QwintlyCore> {
     gemini: {
       apiKey: GEMINI_API_KEY,
       ...{ model: ctx.model || GEMINI_MODEL_DEFAULT },
+    },
+    unsplash: {
+      url: UNSPLASH_URL,
+      accessKey: UNSPLASH_ACCESS_KEY,
     },
   });
 
