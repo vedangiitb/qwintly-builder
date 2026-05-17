@@ -86,7 +86,7 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
                 const parentRoute = String(args.parent_route ?? "");
                 const routeName = String(args.route_name ?? "");
                 const result = await createNewRouteImpl(parentRoute, routeName);
-                return { result };
+                return result;
               },
               insert_element: async (args) => {
                 const route = String(args.route ?? "");
@@ -97,13 +97,13 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
                   parent_id,
                   element,
                 );
-                return { result };
+                return result;
               },
               delete_element: async (args) => {
                 const route = String(args.route ?? "");
                 const element_id = String(args.element_id ?? "");
                 const result = await deleteElementImpl(route, element_id);
-                return { result };
+                return result;
               },
               update_props: async (args) => {
                 const route = String(args.route ?? "");
@@ -114,7 +114,7 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
                   element_id,
                   ...props,
                 });
-                return { result };
+                return result;
               },
               update_class_name: async (args) => {
                 const route = String(args.route ?? "");
@@ -125,7 +125,7 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
                   element_id,
                   class_name,
                 );
-                return { result };
+                return result;
               },
               submit_codegen_done: async (args) => {
                 return {
