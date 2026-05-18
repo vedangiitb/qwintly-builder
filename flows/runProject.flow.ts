@@ -7,6 +7,7 @@ import { buildPageConfig } from "../services/pageConfig/buildPageConfig.service.
 import { cloneTemplate } from "../services/project/cloneTemplate.service.js";
 import { fetchProjectContext } from "../services/project/fetchProjectContext.js";
 import { fetchPlanTasks } from "../services/project/getRequest.service.js";
+import { syncEditOps } from "../services/project/syncEditOps.service.js";
 import { zipProject } from "../services/project/zipProject.service.js";
 import { uploadProjectSnapshot } from "../services/snapshot/uploadSnapshot.service.js";
 
@@ -39,7 +40,14 @@ export async function runProjectFlow() {
   }
 
   /*
-   * Deep Agent Execution
+   * Sync Edit Ops
+   */
+  await step("Syncing snapshot wtih latest changes", () => syncEditOps(), {
+    retries: 1,
+  });
+
+  /*
+   * Agent Execution
    */
   await step(
     "Running Builder AI Flow",
