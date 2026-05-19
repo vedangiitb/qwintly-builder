@@ -29,6 +29,7 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
       deleteElementImpl,
       updatePropsImpl,
       updateClassNameImpl,
+      listDirImpl,
     } = createWorkspaceToolImpls(deps);
 
     const isNewProject = requestType === ProjectRequestType.NEW;
@@ -116,7 +117,7 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
                 });
                 return result;
               },
-              update_class_name: async (args) => {
+              update_classname: async (args) => {
                 const route = String(args.route ?? "");
                 const element_id = String(args.element_id ?? "");
                 const class_name = String(args.class_name ?? "");
@@ -133,8 +134,15 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
                   summary: String(args.summary ?? "").trim(),
                 };
               },
+              list_dir: async (args) => {
+                const content = await listDirImpl(
+                  String(args.path ?? ""),
+                  Number(args.depth ?? 1),
+                );
+                return { content };
+              },
             },
-            30,
+            25,
             ["submit_codegen_done"],
           ),
         {
