@@ -1,6 +1,7 @@
 import { EVENT_TYPES } from "@vedangiitb/qwintly-core";
 import { getJobContext } from "../../job/jobContext.js";
 import { getQwintlyCore } from "../core/qwintlyCore.service.js";
+import { uploadProjectSnapshot } from "../snapshot/uploadSnapshot.service.js";
 
 export const syncEditOps = async () => {
   const ctx = getJobContext();
@@ -8,7 +9,16 @@ export const syncEditOps = async () => {
   const core = await getQwintlyCore();
 
   try {
-    await core.syncEditOps(ctx.prevSessionId, ctx.sessionId);
+    const isModified = await core.syncEditOps(ctx.prevSessionId, ctx.workspace);
+    if (isModified) {
+      await core.streamLog(
+        "Successfully synced edit ops, uploading snapshot",
+        EVENT_TYPES.STEP_FINISHED,
+      );
+      await uploadProjectSnapshot(ctx.prevSnapshotUploadPath);
+    } else {
+      console.log("No edit ops to sync");
+    }
   } catch (err) {
     await core.streamLog(
       "Failed to sync edit ops, using previous snapshot",

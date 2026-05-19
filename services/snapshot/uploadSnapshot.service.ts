@@ -1,12 +1,12 @@
 import { uploadFileToGCS } from "../../infra/gcs/upload.js";
 import { getJobContext } from "../../job/jobContext.js";
 
-export async function uploadProjectSnapshot() {
+export async function uploadProjectSnapshot(uploadDestination?: string) {
   const ctx = getJobContext();
   const zipPath = ctx.zipPath;
   const bucketName = ctx.snapshotBucket;
   const projectId = ctx.projectId;
-  const destination = ctx.snapShotuploadPath;
+  const destination = uploadDestination ?? ctx.snapShotuploadPath;
   console.log(
     `Uploading project snapshot "${zipPath}" to bucket "${bucketName}" at "${destination}" (projectId="${projectId}")`,
   );
