@@ -1,6 +1,5 @@
 // types/elements.ts
 
-import type { CSSProperties } from "react";
 
 export const ELEMENT_TYPES = [
   "fragment",
@@ -27,16 +26,15 @@ export type BuilderElement = {
   type: ElementType;
 
   props?: {
-    style?: CSSProperties;
     onClick?: OnClickAction;
 
     text?: string;
     src?: string;
-    alt?: string;
     href?: string;
+    placeholder?: string;
+    alt?: string;
     target?: string;
     rel?: string;
-    placeholder?: string;
     value?: string;
     type?: string; // input type
 

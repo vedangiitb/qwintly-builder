@@ -70,6 +70,7 @@ export function createJobContext() {
     tmpZipPath: `/tmp/template_${sessionId}.zip`,
     snapShotPath: `projects/${chatId}/${prevSessionId}.zip`,
     snapShotuploadPath: `projects/${chatId}/${sessionId}.zip`,
+    prevSnapshotUploadPath: `projects/${chatId}/${prevSessionId}.zip`,
     snapshotBucket: SNAPSHOT_BUCKET,
     projectId: GCP_PROJECT_ID_QWINTLY,
     templateBucket: TEMPLATE_BUCKET,
