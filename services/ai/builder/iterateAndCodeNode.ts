@@ -30,6 +30,7 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
       updatePropsImpl,
       updateClassNameImpl,
       listDirImpl,
+      updateGlobalStylesImpl,
     } = createWorkspaceToolImpls(deps);
 
     const isNewProject = requestType === ProjectRequestType.NEW;
@@ -140,6 +141,11 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
                   Number(args.depth ?? 1),
                 );
                 return { content };
+              },
+              update_global_styles: async (args) => {
+                const tokens: any = args.tokens;
+                const result = await updateGlobalStylesImpl({ tokens });
+                return result;
               },
             },
             25,
