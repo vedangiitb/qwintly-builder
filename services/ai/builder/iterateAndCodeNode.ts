@@ -11,6 +11,7 @@ import { getQwintlyCore } from "../../core/qwintlyCore.service.js";
 import { normalizeEditedFilePath } from "./applyPatchPathExtractor.js";
 import { BuilderNode } from "./createBuilderGraph.js";
 import { createWorkspaceDeps } from "./workspaceDeps.service.js";
+import { persistModelRsp } from "../../project/persistModelrsp.service.js";
 
 export function makeIterateAndCodeNode(requestType: string): BuilderNode {
   return async (state) => {
@@ -148,8 +149,9 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
                 return result;
               },
             },
-            25,
+            15,
             ["submit_codegen_done"],
+            persistModelRsp,
           ),
         {
           intervalMs: 30_000,
