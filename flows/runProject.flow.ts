@@ -7,6 +7,7 @@ import { buildPageConfig } from "../services/pageConfig/buildPageConfig.service.
 import { cloneTemplate } from "../services/project/cloneTemplate.service.js";
 import { fetchProjectContext } from "../services/project/fetchProjectContext.js";
 import { fetchPlanTasks } from "../services/project/getRequest.service.js";
+import { projectInfoUpdate } from "../services/project/projectInfo.service.js";
 import { syncEditOps } from "../services/project/syncEditOps.service.js";
 import { zipProject } from "../services/project/zipProject.service.js";
 import { uploadProjectSnapshot } from "../services/snapshot/uploadSnapshot.service.js";
@@ -67,7 +68,7 @@ export async function runProjectFlow() {
   /*
    * Generate Project Info Index
    */
-  await step("Building Project Info", () => core.buildProjectInfoIdx(), {
+  await step("Building Project Info", () => projectInfoUpdate(), {
     retries: 1,
   });
 
