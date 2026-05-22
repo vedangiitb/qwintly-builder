@@ -144,8 +144,7 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
                 return { content };
               },
               update_global_styles: async (args) => {
-                const tokens: any = args.tokens;
-                const result = await updateGlobalStylesImpl({ tokens });
+                const result = await updateGlobalStylesImpl(args);
                 return result;
               },
             },
