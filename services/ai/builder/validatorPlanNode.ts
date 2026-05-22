@@ -63,7 +63,7 @@ export function makeValidatorPlanNode(
           return { success: true, count: tasks.length };
         },
       },
-      25,
+      20,
       ["submit_planner_tasks"],
     );
 

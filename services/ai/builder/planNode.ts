@@ -6,6 +6,7 @@ import {
 } from "@vedangiitb/qwintly-core";
 import { ProjectRequestType } from "../../../data/project.constants.js";
 import { getQwintlyCore } from "../../core/qwintlyCore.service.js";
+import { persistModelRsp } from "../../project/persistModelrsp.service.js";
 import { BuilderNode } from "./createBuilderGraph.js";
 import {
   parsePlannerTasksJson,
@@ -64,8 +65,9 @@ export function makePlanNode(
           return { success: true, count: tasks.length };
         },
       },
-      25,
+      20,
       ["submit_planner_tasks"],
+      persistModelRsp,
     );
 
     const plannerTasks =
