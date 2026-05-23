@@ -4,7 +4,8 @@ export async function uploadFileToGCS(
   projectId: string,
   path: string,
   bucketName: string,
-  destination: string
+  destination: string,
+  contentType = "application/zip",
 ) {
   const storage = new Storage({ projectId: projectId });
 
@@ -12,26 +13,7 @@ export async function uploadFileToGCS(
     destination,
     resumable: false,
     metadata: {
-      contentType: "application/zip",
-    },
-  });
-}
-
-export async function uploadContentToGCS(
-  projectId: string,
-  content: string,
-  bucketName: string,
-  destination: string
-) {
-  const storage = new Storage({ projectId });
-
-  const file = storage.bucket(bucketName).file(destination);
-
-  await file.save(content, {
-    resumable: false,
-    contentType: "application/json; charset=utf-8",
-    metadata: {
-      cacheControl: "no-store",
+      contentType,
     },
   });
 }

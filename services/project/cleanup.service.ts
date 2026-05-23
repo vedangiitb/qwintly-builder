@@ -1,11 +1,20 @@
 import { removeFile, removeFolder } from "@vedangiitb/qwintly-core";
 import { getJobContext } from "../../job/jobContext.js";
 import { registerCleanupUtil } from "../../utils/gracefulShutdown.js";
+import { uploadModelRspLogs } from "./persistModelrsp.service.js";
 
 export const registerCleanup = () => {
   const ctx = getJobContext();
   const workspace = ctx.workspace;
   const zipPath = ctx.zipPath;
+  registerCleanupUtil(async () => {
+    try {
+      await uploadModelRspLogs();
+    } catch (e) {
+      console.warn(`Failed to upload model response logs. Err:${e}`);
+      throw e;
+    }
+  });
   registerCleanupUtil(async () => {
     try {
       await removeFolder(workspace);

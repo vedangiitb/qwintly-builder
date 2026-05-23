@@ -1,6 +1,7 @@
 // Session/workspace/env context
 import jwt from "jsonwebtoken";
 import {
+  AGENT_LOGS_BUCKET,
   GCP_PROJECT_ID_QWINTLY,
   GEN_SITES_PROJECT_ID,
   JOB_TOKEN,
@@ -66,6 +67,7 @@ export function createJobContext() {
     sessionId: sessionId,
     workspace: `/tmp/workspace`,
     zipPath: `/tmp/${sessionId}.zip`,
+    agentLogsPath: `/tmp/${sessionId}.txt`,
     baseTemplate: "base-template.zip",
     tmpZipPath: `/tmp/template_${sessionId}.zip`,
     snapShotPath: `projects/${chatId}/${prevSessionId}.zip`,
@@ -75,6 +77,7 @@ export function createJobContext() {
     projectId: GCP_PROJECT_ID_QWINTLY,
     templateBucket: TEMPLATE_BUCKET,
     genSitesProjectId: GEN_SITES_PROJECT_ID,
+    agentLogsBucket: AGENT_LOGS_BUCKET,
   };
 }
 

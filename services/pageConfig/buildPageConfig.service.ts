@@ -1,6 +1,7 @@
 import { getJobContext } from "../../job/jobContext.js";
 import { GenSnapshotRepository } from "../../repository/genSnapshots.repository.js";
 import type { Snapshot } from "../../types/snapshot.js";
+import { defaultStyleConfigJson } from "../../types/styleConfig.js";
 import { buildSnapshotFromWorkspace } from "./snapshotBuilder.js";
 
 export const buildPageConfig = async () => {
@@ -11,7 +12,7 @@ export const buildPageConfig = async () => {
   try {
     snapshot = await buildSnapshotFromWorkspace(ctx.workspace);
   } catch {
-    snapshot = { routes: {} };
+    snapshot = { routes: {}, styleConfig: defaultStyleConfigJson };
   }
 
   await genSnapshotRepo.uploadGenerationSnapshot(ctx.sessionId, snapshot);

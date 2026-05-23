@@ -1,6 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import type { PageConfig, Snapshot } from "../../types/snapshot.js";
+import { assertStyleConfig } from "../../types/styleConfig.js";
+
 
 async function pathExists(p: string) {
   try {
@@ -59,6 +61,13 @@ export async function buildSnapshotFromWorkspace(
     throw new Error(`Missing Next.js app directory at "${appRoot}"`);
   }
 
+  const styleConfigPath = path.join(appRoot, "styleConfig.json");
+  if (!(await pathExists(styleConfigPath))) {
+    throw new Error(`Missing styleConfig.json at "${styleConfigPath}"`);
+  }
+  const rawStyleConfig = await readJsonFile(styleConfigPath);
+  const styleConfig = assertStyleConfig(rawStyleConfig);
+
   const routes: Record<string, PageConfig> = {};
   const allDirs = await walkDirs(appRoot);
 
@@ -75,5 +84,5 @@ export async function buildSnapshotFromWorkspace(
     routes[routeKey] = pageConfig;
   }
 
-  return { routes };
+  return { routes, styleConfig };
 }
