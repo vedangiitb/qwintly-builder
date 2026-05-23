@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { buildSnapshotFromWorkspace } from "../../services/pageConfig/snapshotBuilder.js";
+import { defaultStyleConfigJson } from "../../types/styleConfig.js";
 
 function write(workspace: string, rel: string, content: string) {
   const abs = path.join(workspace, ...rel.split("/"));
@@ -14,6 +15,11 @@ function write(workspace: string, rel: string, content: string) {
 test("buildSnapshotFromWorkspace: collects pageConfig.json for each route", async () => {
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "qwintly-"));
 
+  write(
+    workspace,
+    "app/styleConfig.json",
+    JSON.stringify(defaultStyleConfigJson),
+  );
   write(workspace, "app/page.tsx", "export default function Page(){return null}");
   write(
     workspace,
@@ -39,11 +45,17 @@ test("buildSnapshotFromWorkspace: collects pageConfig.json for each route", asyn
   assert.deepEqual(Object.keys(snapshot.routes).sort(), ["/", "/about"]);
   assert.equal(snapshot.routes["/"]?.elements?.[0]?.id, "root");
   assert.equal(snapshot.routes["/about"]?.elements?.[0]?.id, "about");
+  assert.deepEqual(snapshot.styleConfig, defaultStyleConfigJson);
 });
 
 test("buildSnapshotFromWorkspace: ignores route groups (parentheses) in route key", async () => {
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "qwintly-"));
 
+  write(
+    workspace,
+    "app/styleConfig.json",
+    JSON.stringify(defaultStyleConfigJson),
+  );
   write(
     workspace,
     "app/(marketing)/pricing/page.tsx",
@@ -57,11 +69,17 @@ test("buildSnapshotFromWorkspace: ignores route groups (parentheses) in route ke
 
   const snapshot = await buildSnapshotFromWorkspace(workspace);
   assert.ok(snapshot.routes["/pricing"]);
+  assert.deepEqual(snapshot.styleConfig, defaultStyleConfigJson);
 });
 
 test("buildSnapshotFromWorkspace: only includes folders with both page.tsx and pageConfig.json", async () => {
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "qwintly-"));
 
+  write(
+    workspace,
+    "app/styleConfig.json",
+    JSON.stringify(defaultStyleConfigJson),
+  );
   write(
     workspace,
     "app/x/page.tsx",
@@ -75,4 +93,5 @@ test("buildSnapshotFromWorkspace: only includes folders with both page.tsx and p
 
   const snapshot = await buildSnapshotFromWorkspace(workspace);
   assert.deepEqual(snapshot.routes, {});
+  assert.deepEqual(snapshot.styleConfig, defaultStyleConfigJson);
 });
