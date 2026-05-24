@@ -48,7 +48,7 @@
     "@supabase/supabase-js": "^2.99.2",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "@vedangiitb/qwintly-core": "^1.4.9",
+    "@vedangiitb/qwintly-core": "^1.4.10",
     "archiver": "^7.0.1",
     "diff": "^5.2.0",
     "dotenv": "^17.2.3",
