@@ -20,3 +20,4 @@ export const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN_GEN_EVENTS!;
 export const UNSPLASH_URL = process.env.UNSPLASH_URL!;
 export const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_API_KEY!;
 export const AGENT_LOGS_BUCKET = process.env.AGENT_LOGS_BUCKET!;
+export const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;

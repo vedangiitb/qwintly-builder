@@ -37,6 +37,7 @@ export function createJobContext() {
     model: string;
     prevSessionId: string;
     sessionId: string;
+    byokEnabled: boolean;
   };
   try {
     tokenPayload = jwt.verify(
@@ -55,6 +56,7 @@ export function createJobContext() {
   const model = normalizeString(tokenPayload.model);
   const prevSessionId = normalizeString(tokenPayload.prevSessionId);
   const sessionId = normalizeString(tokenPayload.sessionId);
+  const byokEnabled = Boolean(tokenPayload.byokEnabled);
 
   return {
     chatId: chatId,
@@ -65,6 +67,7 @@ export function createJobContext() {
     model: model,
     prevSessionId: prevSessionId,
     sessionId: sessionId,
+    byokEnabled: byokEnabled,
     workspace: `/tmp/workspace`,
     zipPath: `/tmp/${sessionId}.zip`,
     agentLogsPath: `/tmp/${sessionId}.txt`,
