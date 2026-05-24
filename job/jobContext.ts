@@ -23,6 +23,19 @@ function normalizeString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+const normalizeBoolean = (value: unknown): boolean => {
+  if (typeof value === "boolean") return value;
+  if (typeof value !== "string") {
+    return true;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "true") return true;
+  if (normalized === "false") return false;
+
+  return true;
+};
+
 export function createJobContext() {
   if (!JOB_TOKEN) {
     throw new Error("Missing auth token");
@@ -37,6 +50,7 @@ export function createJobContext() {
     model: string;
     prevSessionId: string;
     sessionId: string;
+    byokEnabled: boolean;
   };
   try {
     tokenPayload = jwt.verify(
@@ -55,6 +69,7 @@ export function createJobContext() {
   const model = normalizeString(tokenPayload.model);
   const prevSessionId = normalizeString(tokenPayload.prevSessionId);
   const sessionId = normalizeString(tokenPayload.sessionId);
+  const byokEnabled = normalizeBoolean(tokenPayload.byokEnabled);
 
   return {
     chatId: chatId,
@@ -65,6 +80,7 @@ export function createJobContext() {
     model: model,
     prevSessionId: prevSessionId,
     sessionId: sessionId,
+    byokEnabled: byokEnabled,
     workspace: `/tmp/workspace`,
     zipPath: `/tmp/${sessionId}.zip`,
     agentLogsPath: `/tmp/${sessionId}.txt`,
