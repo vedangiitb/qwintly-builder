@@ -32,7 +32,7 @@ export function makePlanNode(
     const result = await core.runAiFlow(
       [{ role: "user", parts: [{ text: prompt }] }],
       plannerTools(),
-      20,
+      25,
       ["submit_planner_tasks"],
       persistModelRsp,
     );

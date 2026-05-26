@@ -76,7 +76,7 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
 
       const taskElapsedMs = Date.now() - taskStartedAt;
       await core.streamLog(
-        `AI: Done task ${taskIndex}/${totalTasks} (${formatDurationMs(taskElapsedMs)})`,
+        `AI: Done task ${task.description} (${taskIndex}/${totalTasks}) (${formatDurationMs(taskElapsedMs)})`,
         EVENT_TYPES.STEP_FINISHED,
         true,
       );
