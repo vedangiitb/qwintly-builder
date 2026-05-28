@@ -37,7 +37,7 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
       taskIndex += 1;
       await core.streamLog(
         `AI: Implementing task ${taskIndex}/${totalTasks} — “${task.description}”`,
-        "step_started" as any,
+        EVENT_TYPES.STEP_STARTED,
       );
 
       const taskStartedAt = Date.now();
@@ -62,7 +62,7 @@ export function makeIterateAndCodeNode(requestType: string): BuilderNode {
           ),
         {
           intervalMs: 30_000,
-          eventType: "step_started",
+          eventType: EVENT_TYPES.STEP_STARTED,
           message: (elapsedMs) =>
             `AI: Implementing task ${taskIndex}/${totalTasks} — “${task.description}” (${formatDurationMs(
               elapsedMs,

@@ -4,7 +4,7 @@ import { GCP_PROJECT_ID_QWINTLY } from "../../config/env.js";
 async function getExistingFile(
   bucketName: string,
   filePath: string,
-  project: string = GCP_PROJECT_ID_QWINTLY!,
+  project: string = GCP_PROJECT_ID_QWINTLY || "",
 ): Promise<File> {
   const storage = new Storage({
     projectId: project,

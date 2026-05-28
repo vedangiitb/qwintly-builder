@@ -6,8 +6,8 @@ const kmsClient = new KeyManagementServiceClient();
 
 export const getKeyFromUserid = async (
   userId: string,
-  provider: string = "gemini",
   byokEnabled: boolean,
+  provider: string = "gemini",
 ): Promise<string> => {
   if (!byokEnabled) {
     return GEMINI_API_KEY;

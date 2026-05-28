@@ -1,7 +1,7 @@
 import { getJobContext } from "../../job/jobContext.js";
 import { PreflightErrorList } from "../../types/preflightError.js";
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 const HOOK_REGEX =
   /\b(useState|useEffect|useContext|useRef|useReducer|useMemo|useCallback|useRouter)\b/;
 

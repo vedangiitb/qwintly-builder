@@ -2,7 +2,7 @@ const FILE_HEADER_RE =
   /^\*\*\*\s+(Add File|Update File|Delete File|Move to):\s+(.+)\s*$/gm;
 
 function normalizeEditedPath(p: string): string {
-  const trimmed = p.trim().replace(/\\/g, "/");
+  const trimmed = p.trim().split("\\").join("/");
   if (trimmed.startsWith("./")) return trimmed.slice(2);
   return trimmed;
 }

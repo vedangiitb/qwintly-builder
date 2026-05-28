@@ -14,7 +14,7 @@ import { uploadProjectSnapshot } from "../services/snapshot/uploadSnapshot.servi
 
 export async function runProjectFlow() {
   const ctx = getJobContext();
-  const core = await getQwintlyCore();
+  await getQwintlyCore();
   /*
    * Fetch plan tasks, project context, and clone project Snapshot/Template
    */

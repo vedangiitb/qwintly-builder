@@ -1,4 +1,5 @@
 import {
+  EVENT_TYPES,
   plannerTools,
   ValidatorIndex,
   validatorPrompt,
@@ -18,7 +19,7 @@ export function makeValidatorPlanNode(
 
     await core.streamLog(
       "AI: Planning fixes for validation issues...",
-      "step_started" as any,
+      EVENT_TYPES.STEP_STARTED,
     );
 
     const prompt = validatorPrompt({
@@ -41,7 +42,7 @@ export function makeValidatorPlanNode(
 
     await core.streamLog(
       `AI: Fix plan ready with ${plannerTasks.length} coding tasks`,
-      "step_finished" as any,
+      EVENT_TYPES.STEP_FINISHED,
     );
 
     return { plannerTasks };

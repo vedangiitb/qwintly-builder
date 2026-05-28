@@ -10,7 +10,7 @@ export async function cloneTemplate() {
 
   let bucketName: string;
   let zipPath: string;
-  let projectId: string = ctx.projectId!;
+  let projectId: string = ctx.projectId || "";
   const isNewRequest = ctx.requestType === ProjectRequestType.NEW;
   const tmpZipPath = ctx.tmpZipPath;
 

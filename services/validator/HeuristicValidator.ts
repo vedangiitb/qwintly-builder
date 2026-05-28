@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { getJobContext } from "../../job/jobContext.js";
 import { PreflightErrorList } from "../../types/preflightError.js";
 import { stripLeadingComments, walk } from "./NextRulesValidator.js";
@@ -35,7 +35,7 @@ export const HeuristicValidator = async (): Promise<PreflightErrorList> => {
     // H2: file has JSX but no export
     // ----------------------------------
     if (
-      /\.tsx$/.test(filePath) &&
+      filePath.endsWith(".tsx") &&
       /<\w+/.test(code) &&
       !/\bexport\b/.test(code)
     ) {

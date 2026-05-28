@@ -1,4 +1,5 @@
 import {
+  EVENT_TYPES,
   PlannerIndex,
   plannerPrompt,
   plannerTools,
@@ -20,7 +21,7 @@ export function makePlanNode(
     const core = await getQwintlyCore();
     const isNewProject = requestType === ProjectRequestType.NEW;
 
-    await core.streamLog("AI: Generating plan...", "step_started" as any);
+    await core.streamLog("AI: Generating plan...", EVENT_TYPES.STEP_STARTED);
 
     const prompt = plannerPrompt({
       planTasks: state.planTasks ?? [],
@@ -44,7 +45,7 @@ export function makePlanNode(
 
     await core.streamLog(
       `Planner agent: Planned ${plannerTasks.length} coding tasks`,
-      "step_finished" as any,
+      EVENT_TYPES.STEP_FINISHED,
       true,
     );
     console.log("Planner tasks produced", {

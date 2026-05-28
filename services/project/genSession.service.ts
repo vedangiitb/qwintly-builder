@@ -1,7 +1,7 @@
 import { GenSessionRepo } from "../../repository/genSession.repository.js";
 
 const assertNonEmpty = (value: string, field: string): void => {
-  if (!value || !value.trim()) {
+  if (!value?.trim()) {
     throw new Error(`\`${field}\` must be a non-empty string`);
   }
 };

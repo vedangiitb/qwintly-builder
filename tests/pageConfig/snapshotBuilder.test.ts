@@ -42,7 +42,7 @@ test("buildSnapshotFromWorkspace: collects pageConfig.json for each route", asyn
 
   const snapshot = await buildSnapshotFromWorkspace(workspace);
 
-  assert.deepEqual(Object.keys(snapshot.routes).sort(), ["/", "/about"]);
+  assert.deepEqual(Object.keys(snapshot.routes).sort((a, b) => a.localeCompare(b)), ["/", "/about"]);
   assert.equal(snapshot.routes["/"]?.elements?.[0]?.id, "root");
   assert.equal(snapshot.routes["/about"]?.elements?.[0]?.id, "about");
   assert.deepEqual(snapshot.styleConfig, defaultStyleConfigJson);
