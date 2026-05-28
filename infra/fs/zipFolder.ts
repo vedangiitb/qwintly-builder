@@ -1,5 +1,5 @@
 import archiver from "archiver";
-import fs, { createReadStream } from "fs";
+import fs, { createReadStream } from "node:fs";
 import unzipper from "unzipper";
 
 export async function zipFolder(

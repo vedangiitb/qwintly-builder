@@ -30,23 +30,23 @@ export class ContextRepository extends DBRepository {
     return {
       projectIdentity: {
         ...defaultCollectedContext.projectIdentity,
-        ...(raw.projectIdentity ?? {}),
+        ...raw.projectIdentity,
       },
       targetBusinessContext: {
         ...defaultCollectedContext.targetBusinessContext,
-        ...(raw.targetBusinessContext ?? {}),
+        ...raw.targetBusinessContext,
       },
       branding: {
         ...defaultCollectedContext.branding,
-        ...(raw.branding ?? {}),
+        ...raw.branding,
       },
       functionalRequirements: {
         ...defaultCollectedContext.functionalRequirements,
-        ...(raw.functionalRequirements ?? {}),
+        ...raw.functionalRequirements,
       },
       constraints: {
         ...defaultCollectedContext.constraints,
-        ...(raw.constraints ?? {}),
+        ...raw.constraints,
       },
       otherInfo: raw.otherInfo ?? [],
     };

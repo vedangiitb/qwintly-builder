@@ -1,4 +1,4 @@
-import { QwintlyCore } from "@vedangiitb/qwintly-core";
+import { GEN_STEPS, QwintlyCore } from "@vedangiitb/qwintly-core";
 import {
   SUPABASE_ENDPOINT,
   SUPABASE_SECRET,
@@ -20,8 +20,8 @@ export async function getQwintlyCore(): Promise<QwintlyCore> {
 
   const GEMINI_API_KEY = await getKeyFromUserid(
     ctx.userId,
-    ctx.provider,
     ctx.byokEnabled,
+    ctx.provider,
   );
 
   cachedCore = new QwintlyCore({
@@ -29,7 +29,7 @@ export async function getQwintlyCore(): Promise<QwintlyCore> {
     sessionId: ctx.sessionId,
     workspacePath: ctx.workspace,
     source: "qwintly-builder",
-    step: "building" as any,
+    step: GEN_STEPS.BUILDING,
     supabase: {
       endpoint: SUPABASE_ENDPOINT,
       secret: SUPABASE_SECRET,
@@ -40,7 +40,7 @@ export async function getQwintlyCore(): Promise<QwintlyCore> {
     },
     gemini: {
       apiKey: GEMINI_API_KEY,
-      ...{ model: ctx.model || GEMINI_MODEL_DEFAULT },
+      model: ctx.model || GEMINI_MODEL_DEFAULT,
     },
     unsplash: {
       url: UNSPLASH_URL,

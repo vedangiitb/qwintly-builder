@@ -1,3 +1,4 @@
+import { EVENT_TYPES } from "@vedangiitb/qwintly-core";
 import { getQwintlyCore } from "../../core/qwintlyCore.service.js";
 import { HeuristicValidator } from "../../validator/HeuristicValidator.js";
 import { NextRulesValidator } from "../../validator/NextRulesValidator.js";
@@ -25,7 +26,7 @@ function formatValidationIssues(
 
 export const validationNode: BuilderNode = async (state) => {
   const core = await getQwintlyCore();
-  await core.streamLog("Validating project...", "step_started" as any);
+  await core.streamLog("Validating project...", EVENT_TYPES.STEP_STARTED);
 
   const [nextErrors, heuristicErrors] = await Promise.all([
     NextRulesValidator(),
@@ -34,12 +35,12 @@ export const validationNode: BuilderNode = async (state) => {
 
   const errors = [...nextErrors, ...heuristicErrors];
   if (errors.length === 0) {
-    await core.streamLog("Validation passed", "step_finished" as any);
+    await core.streamLog("Validation passed", EVENT_TYPES.STEP_FINISHED);
   } else {
     console.warn("Validation issues found", { count: errors.length, errors });
     await core.streamLog(
       `Validation found ${errors.length} issue(s)`,
-      "step_error" as any,
+      EVENT_TYPES.STEP_ERROR,
       true,
     );
 
@@ -47,7 +48,7 @@ export const validationNode: BuilderNode = async (state) => {
     if (preview.trim().length > 0) {
       console.log(
         `Validation issues (first 20):\n${preview}`,
-        "step_error" as any,
+        EVENT_TYPES.STEP_ERROR,
         true,
       );
     }

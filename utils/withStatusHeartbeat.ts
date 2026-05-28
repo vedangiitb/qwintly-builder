@@ -1,3 +1,4 @@
+import { EVENT_TYPES } from "@vedangiitb/qwintly-core";
 import { getQwintlyCore } from "../services/core/qwintlyCore.service.js";
 import { formatDurationMs } from "./formatDuration.js";
 
@@ -23,7 +24,7 @@ export async function withStatusHeartbeat<T>(
       core
         .streamLog(
           options.message(elapsedMs),
-          (options.eventType ?? "step_started") as any,
+          (options.eventType ?? EVENT_TYPES.STEP_STARTED) as any,
         )
         .catch((err) => console.warn("Heartbeat streamLog failed", err));
     }, intervalMs);

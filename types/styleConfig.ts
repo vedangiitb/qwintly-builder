@@ -59,22 +59,22 @@ function assertSafeCssValue(key: string, value: string) {
 }
 
 export function assertStyleConfig(config: unknown): StyleConfig {
-  if (!isPlainObject(config)) throw new Error("styleConfig must be an object");
+  if (!isPlainObject(config)) throw new TypeError("styleConfig must be an object");
 
-  const version = config.version;
+  const version = config["version"];
   if (typeof version !== "number" || !Number.isFinite(version)) {
-    throw new Error("styleConfig.version must be a finite number");
+    throw new TypeError("styleConfig.version must be a finite number");
   }
 
-  const tokens = (config as Record<string, unknown>).tokens;
+  const tokens = config["tokens"];
   if (!isPlainObject(tokens))
-    throw new Error("styleConfig.tokens must be an object");
+    throw new TypeError("styleConfig.tokens must be an object");
 
   const resolvedTokens = {} as Record<StyleTokenKey, string>;
   for (const key of STYLE_TOKEN_KEYS) {
-    const rawValue = (tokens as Record<string, unknown>)[key];
+    const rawValue = tokens[key];
     if (typeof rawValue !== "string") {
-      throw new Error(`styleConfig.tokens.${key} must be a string`);
+      throw new TypeError(`styleConfig.tokens.${key} must be a string`);
     }
     assertSafeCssValue(key, rawValue);
     resolvedTokens[key] = rawValue;
@@ -84,10 +84,9 @@ export function assertStyleConfig(config: unknown): StyleConfig {
     (k) => !(STYLE_TOKEN_KEYS as readonly string[]).includes(k),
   );
   if (extraKeys.length) {
+    const sortedKeys = [...extraKeys].sort((a, b) => a.localeCompare(b));
     throw new Error(
-      `styleConfig.tokens contains unknown keys: ${extraKeys
-        .sort()
-        .join(", ")}`,
+      `styleConfig.tokens contains unknown keys: ${sortedKeys.join(", ")}`,
     );
   }
 

@@ -1,11 +1,11 @@
+import { EVENT_TYPES } from "@vedangiitb/qwintly-core";
 import { getQwintlyCore } from "../services/core/qwintlyCore.service.js";
-import { isStepDone } from "./stepDone.js";
-import { markStepDone } from "./stepDone.js";
+import { formatDurationMs } from "../utils/formatDuration.js";
 import {
   defaultHeartbeatMessage,
   withStatusHeartbeat,
 } from "../utils/withStatusHeartbeat.js";
-import { formatDurationMs } from "../utils/formatDuration.js";
+import { isStepDone, markStepDone } from "./stepDone.js";
 
 type StepFn<T> = () => Promise<T>;
 
@@ -31,19 +31,19 @@ export async function step<T>(
     try {
       await core.streamLog(
         `Started ${name}${attemptLabel}`,
-        "step_started" as any,
+        EVENT_TYPES.STEP_STARTED,
       );
 
       const result = await withStatusHeartbeat(fn, {
         intervalMs: options?.heartbeatIntervalMs ?? 30_000,
-        eventType: "step_started",
+        eventType: EVENT_TYPES.STEP_STARTED,
         message: (elapsedMs) => defaultHeartbeatMessage(name, elapsedMs),
       });
 
       const elapsedMs = Date.now() - startedAt;
       await core.streamLog(
         `Done ${name} (${formatDurationMs(elapsedMs)})`,
-        "step_finished" as any,
+        EVENT_TYPES.STEP_FINISHED,
         true,
       );
       await markStepDone(name);
@@ -54,7 +54,7 @@ export async function step<T>(
         const reason = err?.message ? String(err.message) : String(err);
         await core.streamLog(
           `Failed ${name} (after ${formatDurationMs(elapsedMs)}): ${reason}`,
-          "step_error" as any,
+          EVENT_TYPES.STEP_ERROR,
           true,
         );
         console.error(`Step failed: ${name}`, {
@@ -68,7 +68,7 @@ export async function step<T>(
 
       await core.streamLog(
         `Retrying ${name} (attempt ${attempt + 1}/${totalAttempts})`,
-        "step_retry" as any,
+        EVENT_TYPES.STEP_RETRY,
       );
     }
   }

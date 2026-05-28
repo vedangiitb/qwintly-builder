@@ -8,6 +8,7 @@ import { makeValidatorPlanNode } from "./builder/validatorPlanNode.js";
 import { CollectedContext } from "../../types/context.types.js";
 import { PlanTask } from "../../types/updatePlan.types.js";
 import { AgentState } from "./state.js";
+import { EVENT_TYPES } from "@vedangiitb/qwintly-core";
 
 export const runBuilderAiFlow = async (
   planTasks: PlanTask[],
@@ -22,10 +23,10 @@ export const runBuilderAiFlow = async (
   const ctx = getJobContext();
 
   const graph = createBuilderGraph({
-    plan: makePlanNode(plannerIndex as any, ctx.requestType),
+    plan: makePlanNode(plannerIndex, ctx.requestType),
     codegen: makeIterateAndCodeNode(ctx.requestType),
     validate: validationNode,
-    validationPlan: makeValidatorPlanNode(validatorIndex as any),
+    validationPlan: makeValidatorPlanNode(validatorIndex),
   });
 
   const initialState: AgentState = {
@@ -38,8 +39,8 @@ export const runBuilderAiFlow = async (
     editedFiles: [],
   };
 
-  await core.streamLog("AI: Starting builder flow", "step_started" as any);
+  await core.streamLog("AI: Starting builder flow", EVENT_TYPES.STEP_STARTED);
   const result = await graph.invoke(initialState);
-  await core.streamLog("AI: Builder flow complete", "step_finished" as any);
+  await core.streamLog("AI: Builder flow complete", EVENT_TYPES.STEP_STARTED);
   return result;
 };

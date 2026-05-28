@@ -22,6 +22,7 @@ export const syncEditOps = async () => {
       console.log("No edit ops to sync");
     }
   } catch (err) {
+    console.error("Failed to sync edit ops:", err);
     await core.streamLog(
       "Failed to sync edit ops, using previous snapshot",
       EVENT_TYPES.STEP_ERROR,
