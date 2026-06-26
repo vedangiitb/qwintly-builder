@@ -57,7 +57,7 @@
     "jsonwebtoken": "^9.0.3",
     "langchain": "^1.0.0",
     "unzipper": "^0.12.3",
-    "ws": "^8.18.3",
+    "ws": "^8.21.0",
     "zod": "^4.2.1",
     "zod-to-json-schema": "^3.25.1"
   }
